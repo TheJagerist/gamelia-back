@@ -8,11 +8,19 @@ gamelia/
   back/    API : Node.js, Express, PostgreSQL
 ```
 
+## Site en ligne
+
+Mis en ligne le 14 novembre 2026 sur le VPS Datacloud : **https://gamelia.ge-tech.site** (site) et **https://gamelia.ge-tech.site/api** (API, contrôle : `/api/sante`). Le sous-domaine `gamelia` du nom `ge-tech.site` pointe vers le serveur par un enregistrement DNS de type A ; le HTTPS vient de Let's Encrypt. Les e-mails automatiques passent par un service SMTP (Brevo), avec le domaine authentifié (DKIM et DMARC) pour ne pas arriver dans les courriers indésirables.
+
 ## Mettre le site en ligne (VPS Datacloud)
 
 Une commande installe tout (PostgreSQL, API, site, HTTPS, pare-feu, sauvegardes) : suivre [`DEPLOIEMENT-VPS.md`](DEPLOIEMENT-VPS.md). Le site en ligne ne contient ni données simulées ni compte de démonstration.
 
 Documents de la révision finale : [`RAPPORT-REVISION.md`](RAPPORT-REVISION.md) (ce qui a été vérifié et corrigé) et [`DECLARATIONS-SOUMISSION.md`](DECLARATIONS-SOUMISSION.md) (brouillon des déclarations à faire au dépôt).
+
+## Tester sans rien installer
+
+Ouvrir **https://gamelia.ge-tech.site**. Un développeur peut créer un compte avec n'importe quelle adresse e-mail et tout essayer : questions, leçons, défis, projets, classement, Agnès. Le site en ligne ne contient aucun compte de démonstration ; un compte **recruteur** est en attente de validation tant qu'un administrateur de l'équipe ne l'a pas validé (il reçoit alors un e-mail).
 
 ## Développement local
 
@@ -42,6 +50,25 @@ cp .env.example .env.local      # retirer NEXT_PUBLIC_API_MOCK, puis NEXT_PUBLIC
                                 # NEXT_PUBLIC_SITE_URL=http://localhost:3000, NEXT_PUBLIC_CONTACT_EMAIL=vous@exemple.com
 npm run build && npm start      # http://localhost:3000
 ```
+
+Les **e-mails** (bienvenue, validation d'un recruteur, mot de passe oublié) sont facultatifs en local : sans `SMTP_HOST` ni `MAIL_FROM` dans `back/.env`, rien n'est envoyé et « Mot de passe oublié » renvoie vers l'équipe. Pour les essayer, renseigner les variables `SMTP_*` et `MAIL_FROM` décrites dans `back/README.md`.
+
+### Lancer les tests
+
+```bash
+# API : 143 tests, sur une VRAIE base PostgreSQL dont le nom contient « test » (garde-fou)
+createdb gamelia_test
+cd back
+DATABASE_URL=postgres://utilisateur:motdepasse@localhost:5432/gamelia_test SESSION_SECRET=une-longue-chaine-aleatoire-1 COOKIE_SECRET=une-autre-longue-chaine-2 FRONT_ORIGIN=http://localhost:3000 npm test
+
+# Site, mode démonstration : parcours dans un navigateur, téléphone et ordinateur (48 tests)
+cd ../front
+npx playwright install chromium    # une seule fois
+NEXT_PUBLIC_API_MOCK=true npm run build
+npm test
+```
+
+`npm run typecheck` et `npm run lint` (dans `front/`) contrôlent le code du site ; les tests de parcours réels à travers nginx (`npm run test:integration`) demandent l'installation complète décrite dans `DEPLOIEMENT-VPS.md`.
 
 ## Agnès, l'assistante IA
 
