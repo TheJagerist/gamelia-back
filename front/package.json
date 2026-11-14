@@ -1,0 +1,37 @@
+{
+  "name": "gamelia-front",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Gamelia - front-end Next.js (Concours CADEV by Systalink)",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "playwright test",
+    "licences": "license-checker --production --summary --failOn 'GPL;AGPL;LGPL;GPL-2.0;GPL-3.0;AGPL-3.0;LGPL-2.1;LGPL-3.0'",
+    "test:integration": "playwright test -c playwright.integration.config.ts"
+  },
+  "dependencies": {
+    "@fontsource-variable/bricolage-grotesque": "^5.2.0",
+    "lucide-react": "^0.468.0",
+    "next": "14.2.35",
+    "prism-react-renderer": "^2.4.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.35",
+    "license-checker": "^25.0.1",
+    "postcss": "^8.4.49",
+    "tailwindcss": "3.4.17",
+    "typescript": "^5"
+  }
+}

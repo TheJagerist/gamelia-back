@@ -1,0 +1,21 @@
+[Unit]
+Description=Gamelia - API (Node.js, Express)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=gamelia
+Group=gamelia
+WorkingDirectory=/home/gamelia/gamelia/back
+# La configuration (base de données, secrets, clé Agnès) est lue dans /home/gamelia/gamelia/back/.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node src/server.js
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

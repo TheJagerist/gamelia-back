@@ -1,0 +1,13 @@
+# Journal d'usage de l'IA (front-end)
+
+À tenir en continu (règlement, article 6). Une ligne par usage.
+
+| Date | Outil | Partie du projet | Ce qui a été produit | Relu et compris par |
+|---|---|---|---|---|
+| 15/10/2026 | Claude (Anthropic) | Front-end complet : composants communs, pages des quatre espaces, module lib/api, données simulées, PWA, tests Playwright | Code initial à partir du cahier des charges et de la page d'accueil existante | (à compléter par C) |
+| 02/11/2026 | Claude (Anthropic) | Assemblage front + back ; espace Agnès (assistante IA : piste sur chaque question, page /agnes, routes /agnes du back) ; routes de messagerie du back ; corrections (champ participants des défis, limite de débit sur /auth/me, en-tête trop large, déconnexion, messages d'erreur 409/429) ; tests (back, parcours démo, parcours réels) | Code, tests et documentation, vérifiés par les tests automatisés | (à compléter) |
+| 12/11/2026 | Claude (Anthropic), modèles Sonnet 5.5 puis Fable 5.2 | Révision finale front + back : audit de sécurité et de qualité ; longueurs maximales et liens https côté API ; vraie vérification GitHub par code ; acceptation des conditions à l'inscription ; pages Confidentialité, Conditions et Mot de passe oublié ; mode réel par défaut et retrait du code de démonstration du site en ligne ; contrôle de santé de la base ; scripts de déploiement du VPS (nginx, systemd, HTTPS, sauvegarde) ; nouveaux tests ; documentation et rapport de révision | Code, tests, scripts et documents ; vérifiés par les tests automatisés et par une installation d'essai | (à compléter) |
+| 14/11/2026 | Claude (Anthropic), modèle Sonnet 5.5 | Connexion et inscription avec GitHub (OAuth) : routes API, migration 004, pages front, script de configuration du secret, tests (API, navigateur avec faux GitHub), documentation | Code, tests et documents ; vérifiés par les tests automatisés | (à compléter) |
+| 14/11/2026 | Claude (Anthropic), modèle Sonnet 5.5 | Envoi automatique d'e-mails (SMTP) : validation/refus d'un compte recruteur, e-mails de bienvenue, mot de passe oublié par lien à usage unique (API, deux pages du front, script de configuration du VPS, tests avec faux serveur SMTP, documentation) | Code, tests, script et documents ; vérifiés par les tests automatiques et un essai du script | (à compléter) |
+
+Avant le dépôt : relire chaque module, savoir l'expliquer au jury (cahier, section 8), et reporter cette ligne dans la déclaration d'usage de l'IA.

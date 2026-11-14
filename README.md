@@ -1,104 +1,100 @@
-# GAMELIA — Backend (API)
+# Gamelia
 
-Plateforme d'échange pour les développeurs, **pour l'Afrique et par l'Afrique** — projet présenté au concours CADEV (Systalink).
-Ce dépôt contient l'API (Node.js / Express / PostgreSQL) consommée par le front Next.js.
+La plateforme africaine d'échange, par et pour les développeurs : poser ses questions, apprendre, prouver ses compétences par des défis et des projets réels, être repéré par des recruteurs. Projet présenté au **Concours CADEV by Systalink**.
 
-## Prérequis
+```
+gamelia/
+  front/   Site web : Next.js 14, TypeScript, Tailwind CSS
+  back/    API : Node.js, Express, PostgreSQL
+```
 
-- Node.js **≥ 20** (testé sur 22)
-- PostgreSQL **≥ 14** (testé sur 16) avec les extensions `pgcrypto` et `citext` (incluses dans `postgresql-contrib`)
+## Mettre le site en ligne (VPS Datacloud)
 
-## Installation locale
+Une commande installe tout (PostgreSQL, API, site, HTTPS, pare-feu, sauvegardes) : suivre [`DEPLOIEMENT-VPS.md`](DEPLOIEMENT-VPS.md). Le site en ligne ne contient ni données simulées ni compte de démonstration.
+
+Documents de la révision finale : [`RAPPORT-REVISION.md`](RAPPORT-REVISION.md) (ce qui a été vérifié et corrigé) et [`DECLARATIONS-SOUMISSION.md`](DECLARATIONS-SOUMISSION.md) (brouillon des déclarations à faire au dépôt).
+
+## Développement local
+
+### Démonstration en deux minutes (sans base de données)
+
+Il faut Node.js (version LTS, https://nodejs.org). Windows : double-cliquer sur `LANCER-DEMO-WINDOWS.bat`. Mac ou Linux : `./LANCER-DEMO-MAC-LINUX.sh`.
+
+Le site s'ouvre sur http://localhost:3000 en **mode démonstration** : données simulées dans le navigateur, bandeau « Démonstration » en haut de page, réponses d'Agnès simulées. Comptes proposés en un clic sur la page de connexion (mot de passe `demo1234`). Ce mode sert à découvrir le site ; il n'est jamais celui du site en ligne.
+
+### Site complet (front + API + PostgreSQL)
+
+Prérequis : Node.js 20 ou plus, PostgreSQL 14 ou plus (avec `postgresql-contrib`).
 
 ```bash
+# 1. API
+cd back
 npm ci
-cp .env.example .env          # puis renseigner DATABASE_URL, SESSION_SECRET, COOKIE_SECRET
-npm run migrate               # crée les tables
-npm run seed                  # catalogues (pistes, leçons, badges, défis…)
-npm run seed:demo             # (optionnel) données et comptes de démonstration
-npm run dev                   # http://localhost:4000  — test : GET /sante
+cp .env.example .env            # renseigner DATABASE_URL, SESSION_SECRET, COOKIE_SECRET, et AGNES_API_KEY pour Agnès
+npm run migrate && npm run seed
+npm run seed:demo               # facultatif : comptes d'essai, refusés en production
+npm run dev                     # http://localhost:4000 (contrôle : /sante vérifie aussi la base)
+
+# 2. Site
+cd ../front
+npm ci
+cp .env.example .env.local      # retirer NEXT_PUBLIC_API_MOCK, puis NEXT_PUBLIC_API_URL=http://localhost:4000,
+                                # NEXT_PUBLIC_SITE_URL=http://localhost:3000, NEXT_PUBLIC_CONTACT_EMAIL=vous@exemple.com
+npm run build && npm start      # http://localhost:3000
 ```
 
-## Variables d'environnement
+## Agnès, l'assistante IA
 
-| Variable | Obligatoire | Rôle |
+Agnès répond aux développeurs grâce à l'API **Agnes AI** (modèle gratuit `agnes-2.0-flash`) :
+
+- **sur chaque question du forum**, « La piste d'Agnès » : une première réponse demandée par un membre, générée une fois puis visible par tous. Elle est signalée « IA », ne rapporte aucun point et ne remplace pas les réponses de la communauté ;
+- **sur la page `/agnes`**, une discussion privée pour comprendre une erreur, revoir une notion ou faire relire du code, y compris à partir d'une question (« Approfondir avec Agnès »).
+
+Pour l'activer, mettre la clé dans `back/.env` : `AGNES_API_KEY=…`. Elle reste sur le serveur et n'est jamais envoyée au navigateur. Sans clé, l'espace Agnès s'affiche « indisponible » et tout le reste du site fonctionne. Chaque membre est limité à 30 demandes par heure (réglable avec `AGNES_LIMIT_PER_HOUR`).
+
+## Qualité (12 novembre 2026, révision finale)
+
+| Partie | Contrôle | Résultat |
 |---|---|---|
-| `PORT` | non (4000) | Port d'écoute |
-| `NODE_ENV` | non | `production` active les cookies `secure` (HTTPS requis) |
-| `FRONT_ORIGIN` | oui | Origine exacte du front (ex. `https://gamelia.exemple.com`), utilisée pour CORS |
-| `DATABASE_URL` | oui | `postgres://utilisateur:mdp@hote:5432/base` |
-| `SESSION_SECRET`, `COOKIE_SECRET` | oui | Chaînes aléatoires longues (voir ci-dessous) |
-| `COOKIE_DOMAIN` | prod | Domaine parent partagé front/API, ex. `.exemple.com` (vide en local) |
-| `SESSION_TTL_DAYS` | non | Durée de session |
-| `AUTH_RATE_LIMIT_MAX` | non (10) | Tentatives par minute sur `/auth/*` |
+| back | `npm test` (vraie base PostgreSQL) | 143 tests réussis (dont 27 pour les e-mails automatiques et le mot de passe oublié, ajoutés le 14 novembre) |
+| back | `npm audit` | 0 vulnérabilité |
+| front | `npm run typecheck`, `npm run lint` | 0 erreur, 0 avertissement |
+| front | `npm run build` | 116 Ko de JavaScript au maximum par page (objectif < 150 Ko) |
+| front | `npm test` (parcours en mode démonstration) | 48 tests réussis, téléphone et ordinateur |
+| front + back | `npm run test:integration` (parcours réels, à travers nginx en HTTPS) | 12 tests réussis |
+| front + back | licences (`npm run licences`) | MIT, ISC, BSD, Apache-2.0, OFL ; aucune GPL, AGPL, LGPL |
+| déploiement | `installer-vps.sh` exécuté sur un Ubuntu 24.04 de test | base, configuration, build et nginx validés |
 
-Générer un secret : `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+Le détail, les limites et ce qui reste à faire par l'équipe sont dans [`RAPPORT-REVISION.md`](RAPPORT-REVISION.md).
 
-## Scripts
+## E-mails automatiques (14 novembre 2026)
 
-| Commande | Effet |
-|---|---|
-| `npm start` / `npm run dev` | Lance l'API |
-| `npm run migrate` | Applique les migrations SQL de `src/db/migrations` |
-| `npm run seed` | Insère les catalogues (idempotent) |
-| `npm run seed:demo` | Comptes + données de démo (idempotent, supprime les `@demo.gamelia` avant) |
-| `ADMIN_EMAIL=… ADMIN_PASSWORD=… npm run create-admin` | Crée ou promeut un administrateur (mot de passe ≥ 12 caractères) |
-| `npm test` | 78 tests d'intégration sur une **vraie base PostgreSQL** |
-| `npm run licences` | Vérifie les licences des dépendances |
+E-mails de bienvenue à l'inscription, e-mail quand l'admin valide ou refuse un compte recruteur, et « mot de passe oublié » par lien à usage unique (deux nouvelles pages du front : `/mot-de-passe-oublie` et `/reinitialiser-mot-de-passe`). Facultatif (sans SMTP, rien n'est envoyé), jamais bloquant, sans doublon. Configuration sur le VPS : `sudo bash back/deploy/definir-smtp.sh` (étape 8 de [`DEPLOIEMENT-VPS.md`](DEPLOIEMENT-VPS.md)). Détails : `back/README.md`.
 
-### Comptes de démonstration (`npm run seed:demo`, mot de passe `Demo2026!`)
+## Historique : version du 2 novembre 2026
 
-- `dev@demo.gamelia` — développeuse (Fatou Diop)
-- `recruteur@demo.gamelia` — recruteur validé (Baobab Tech)
-- `recruteur.attente@demo.gamelia` — recruteur en attente de validation
-- `admin@demo.gamelia` — administrateur
+**Ajouts**
 
-> Ne **jamais** lancer `seed:demo` en production réelle avec ces mots de passe publics sans les changer ; pour la démo du concours, c'est volontaire.
+- Espace Agnès complet : piste d'Agnès sur chaque question, page de discussion `/agnes`, accès depuis l'en-tête, le menu, l'accueil et « Comment ça marche ».
+- Back : routes de messagerie privée (le front les appelait déjà, elles n'existaient pas côté API), routes Agnès, migration `002_messages_agnes.sql`, conversations de démonstration, 11 nouveaux tests.
+- Le contact d'un recruteur ouvre désormais une vraie conversation à laquelle le développeur peut répondre.
+- Tests de parcours réels front + back (`front/tests-integration`).
 
-## Tests
+**Corrections**
 
-```bash
-createdb gamelia_test        # le nom DOIT contenir « test » (garde-fou)
-DATABASE_URL=postgres://user:mdp@localhost:5432/gamelia_test npm test
-```
+- Les pages Défis et détail d'un défi plantaient avec l'API réelle (champ `participants` absent).
+- La limite anti-force brute s'appliquait aussi à `GET /auth/me`, appelé à chaque page : au-delà de 10 pages par minute, ou derrière une adresse IP partagée (cybercafé, campus, réseau mobile), les membres apparaissaient déconnectés.
+- Les messages d'erreur précis du serveur (« Vous avez déjà candidaté à ce défi », limites, indisponibilité) étaient remplacés par un texte générique.
+- L'en-tête débordait de l'écran sur les téléphones de 360 px et sur ordinateur à 1280 px (cloche et avatar poussés hors cadre).
+- Sur téléphone, la fenêtre « Bloquer ce membre » de la messagerie sortait de l'écran (conséquence du débordement).
+- Se déconnecter depuis une page protégée renvoyait vers « Se connecter » avec un message d'erreur, au lieu de l'accueil.
+- La police du thème Tailwind pointait vers une variable inexistante ; libellés « 1 non lus » corrigés ; adresses e-mail longues qui élargissaient les cartes de l'espace admin ; lien « Voir un profil public » de l'accueil cassé avec l'API réelle ; champ `recruiter` manquant dans les défis du recruteur.
 
-Les tests migrent et alimentent la base, démarrent le serveur, puis nettoient leurs comptes (`@test.gamelia`).
-Ils refusent de tourner sur une base dont le nom ne contient pas « test ».
+## Documentation
 
-## Structure
-
-```
-src/
-  server.js          Assemblage Express, sécurité, routes, arrêt propre
-  config/env.js      Lecture/validation de l'environnement (échoue vite)
-  db/                Migrations, seeds, création d'admin
-  middleware/        Session, CSRF, gestion d'erreurs
-  routes/            Un fichier par domaine (auth, questions, learn, projets, recruteur…)
-  services/          Points (plafond, verrou), résumés partagés
-  utils/             Cookies, sérialisation des utilisateurs, validation
-tests/               Tests d'intégration (node:test)
-docs/                Déploiement, licences, limites connues
-deploy/              Exemples nginx et systemd
-```
-
-## Choix de sécurité
-
-- Mots de passe : bcrypt (coût 12). Sessions **opaques côté serveur** (table `sessions`), cookie `httpOnly`.
-- **CSRF** : double-submit (`gamelia_csrf` + en-tête `X-CSRF-Token`) vérifié sur toute requête mutante authentifiée.
-- CORS à origine exacte avec credentials, `helmet`, limitation de débit sur `/auth`, validation `zod` de toutes les entrées.
-- Points : verrou de ligne (`FOR UPDATE`), plafond de 200 pts/jour, seuls les développeurs en gagnent, anti-triche sur ses propres contenus.
-- Vie privée : ville et profil masquables, e-mails jamais exposés publiquement.
-- Aucun secret dans Git (`.env` ignoré). `npm audit` : 0 vulnérabilité. Licences : MIT / ISC / BSD uniquement.
-
-## Contrat d'API
-
-Le contrat suit exactement le front (`lib/types.ts`, serveur mock). Format d'erreur : `{ "message": string, "code"?: string, "fields"?: {…} }`.
-Détail des routes : `claude/api-routes.md` (projet GAMELIA) et `schema.sql` pour le schéma.
-
-## Déploiement
-
-Voir [docs/DEPLOIEMENT.md](docs/DEPLOIEMENT.md). Point critique : **front et API doivent partager le même domaine parent** (ex. `gamelia.exemple.com` et `api.gamelia.exemple.com`) et être servis en **HTTPS**, sinon le cookie CSRF n'est pas lisible par le front.
-
-## Limites connues
-
-Voir [docs/LIMITES.md](docs/LIMITES.md).
+- `front/README.md` : fonctionnement du site, charte, qualité, déploiement du front.
+- `back/README.md` : API, variables d'environnement, routes de messagerie et d'Agnès, sécurité.
+- `DEPLOIEMENT-VPS.md` : mise en ligne sur le VPS Datacloud, pas à pas.
+- `RAPPORT-REVISION.md`, `DECLARATIONS-SOUMISSION.md` : révision finale et déclarations du dépôt.
+- `back/docs/LIMITES.md` : limites connues.
+- `front/JOURNAL-IA.md` : journal d'usage de l'IA (règlement, article 6), à compléter par l'équipe.

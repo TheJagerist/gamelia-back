@@ -1,0 +1,90 @@
+/* Charte Gamelia : palette violette.
+   F3CCDE (rose poudré) · D6A8C4 (mauve clair) · BA88AE (mauve) · 9E6899 (orchidée) · 5B3765 (prune).
+   Couleur principale : prune 5B3765. Couleur d'accent : mauve clair D6A8C4.
+   Les variantes plus foncées servent au texte, pour garder des contrastes WCAG AA. */
+:root {
+  --bg: #faf6f9;
+  --bg-rgb: 250 246 249;
+  --surface: #ffffff;
+  --surface-rgb: 255 255 255;
+  --sunken: #f3eaf1;
+  --sunken-rgb: 243 234 241;
+  --ink: #2a1730;
+  --ink-rgb: 42 23 48;
+  --muted: #6e5a6c;
+  --muted-rgb: 110 90 108;
+  --line: #e6d8e2;
+  --line-rgb: 230 216 226;
+
+  --primary: #5b3765;
+  --primary-rgb: 91 55 101;
+  --primary-strong: #47294f;
+  --primary-strong-rgb: 71 41 79;
+  --primary-ink: #ffffff;
+  --primary-ink-rgb: 255 255 255;
+  --primary-soft: #f3e7f0;
+  --primary-soft-rgb: 243 231 240;
+
+  --accent: #d6a8c4;
+  --accent-rgb: 214 168 196;
+  --accent-ink: #7a4775;
+  --accent-ink-rgb: 122 71 117;
+  --accent-soft: #fbeef5;
+  --accent-soft-rgb: 251 238 245;
+
+  --success: #1d7349;
+  --success-rgb: 29 115 73;
+  --success-soft: #e1f2e9;
+  --success-soft-rgb: 225 242 233;
+  --danger: #b3261e;
+  --danger-rgb: 179 38 30;
+  --danger-soft: #fbe7e5;
+  --danger-soft-rgb: 251 231 229;
+
+  --ring: #9e6899;
+  --ring-rgb: 158 104 153;
+  color-scheme: light;
+}
+[data-theme='dark'] {
+  --bg: #1a1020;
+  --bg-rgb: 26 16 32;
+  --surface: #241729;
+  --surface-rgb: 36 23 41;
+  --sunken: #2e1e34;
+  --sunken-rgb: 46 30 52;
+  --ink: #f6ecf3;
+  --ink-rgb: 246 236 243;
+  --muted: #c4afc0;
+  --muted-rgb: 196 175 192;
+  --line: #3e2b45;
+  --line-rgb: 62 43 69;
+
+  --primary: #d6a8c4;
+  --primary-rgb: 214 168 196;
+  --primary-strong: #f3ccde;
+  --primary-strong-rgb: 243 204 222;
+  --primary-ink: #2a1730;
+  --primary-ink-rgb: 42 23 48;
+  --primary-soft: #3e2747;
+  --primary-soft-rgb: 62 39 71;
+
+  --accent: #f3ccde;
+  --accent-rgb: 243 204 222;
+  --accent-ink: #f3ccde;
+  --accent-ink-rgb: 243 204 222;
+  --accent-soft: #4a2e4a;
+  --accent-soft-rgb: 74 46 74;
+
+  --success: #6fd3a0;
+  --success-rgb: 111 211 160;
+  --success-soft: #133626;
+  --success-soft-rgb: 19 54 38;
+  --danger: #ff8a80;
+  --danger-rgb: 255 138 128;
+  --danger-soft: #3d1715;
+  --danger-soft-rgb: 61 23 21;
+
+  --ring: #f3ccde;
+  --ring-rgb: 243 204 222;
+  color-scheme: dark;
+}
