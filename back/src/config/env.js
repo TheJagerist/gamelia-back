@@ -59,6 +59,19 @@ env.githubOauth = {
   callbackUrl: process.env.GITHUB_CALLBACK_URL || `${env.frontOrigin.replace(/\/+$/, '')}/api/auth/github/callback`,
 };
 
+// Connexion avec Google (OAuth 2.0 / OpenID Connect). Facultatif : sans identifiant ni secret, le bouton n'apparaît pas.
+//   GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET : créés sur https://console.cloud.google.com (Identifiants > ID client OAuth).
+//   GOOGLE_CALLBACK_URL : adresse de retour déclarée chez Google ; par défaut <FRONT_ORIGIN>/api/auth/google/callback.
+//   GOOGLE_AUTH_URL / GOOGLE_TOKEN_URL / GOOGLE_USERINFO_URL : remplacés par un faux serveur dans les tests automatisés.
+env.googleOauth = {
+  clientId: process.env.GOOGLE_CLIENT_ID || '',
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+  authUrl: process.env.GOOGLE_AUTH_URL || 'https://accounts.google.com/o/oauth2/v2/auth',
+  tokenUrl: process.env.GOOGLE_TOKEN_URL || 'https://oauth2.googleapis.com/token',
+  userinfoUrl: process.env.GOOGLE_USERINFO_URL || 'https://openidconnect.googleapis.com/v1/userinfo',
+  callbackUrl: process.env.GOOGLE_CALLBACK_URL || `${env.frontOrigin.replace(/\/+$/, '')}/api/auth/google/callback`,
+};
+
 // E-mails sortants (SMTP). Facultatif : sans SMTP_HOST et MAIL_FROM, aucun e-mail n'est envoyé (le fait est écrit dans
 // les journaux) et le reste du site fonctionne normalement. Le mot de passe SMTP ne quitte jamais le serveur.
 env.mail = {

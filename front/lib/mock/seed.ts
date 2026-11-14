@@ -1,6 +1,7 @@
 // Données de démonstration. Même forme que les réponses prévues de l'API.
 // Utilisées seulement en mode démonstration (NEXT_PUBLIC_API_MOCK=true) ; absentes du site réel.
 import type { Badge, Level, LessonBlock, QuizQuestion, User } from '../types';
+import lessonContent from './lessons-content.json';
 
 const d = (daysAgo: number, h = 10) => {
   // Dates relatives au jour de la démo, pour que « il y a 2 heures » reste vrai.
@@ -105,78 +106,47 @@ export const tracks: DbTrack[] = [
 ];
 
 export const lessons: DbLesson[] = [
-  { id: 'web-1', trackId: 'web', title: 'La structure d’une page HTML', minutes: 6, blocks: [
-    { type: 'p', text: "Une page web est un document texte. Le HTML décrit ce qu'il contient : des titres, des paragraphes, des liens, des images. Le navigateur lit ce document et l'affiche." },
-    { type: 'code', lang: 'markup', content: '<!DOCTYPE html>\n<html lang="fr">\n  <head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1">\n    <title>Ma première page</title>\n  </head>\n  <body>\n    <h1>Bonjour Dakar</h1>\n    <p>Ma première page en ligne.</p>\n  </body>\n</html>' },
-    { type: 'tip', text: 'La ligne meta viewport est indispensable : sans elle, votre page sera minuscule sur téléphone.' },
-    { type: 'p', text: "La partie <head> contient les informations sur la page (titre, encodage). La partie <body> contient ce que voit le visiteur." },
-  ], quiz: quiz([
+  { id: 'web-1', trackId: 'web', title: 'La structure d’une page HTML', minutes: 6, blocks: lessonContent['web-1'].blocks as LessonBlock[], quiz: quiz([
     ['Où place-t-on le contenu visible de la page ?', ['Dans <head>', 'Dans <body>', 'Dans <title>'], 1],
     ['À quoi sert la balise meta viewport ?', ['Changer la couleur du site', 'Adapter la page à la largeur du téléphone', 'Ajouter une image'], 1],
     ['Quelle balise crée le titre principal ?', ['<h1>', '<p>', '<title>'], 0],
   ]), explanations: ['Tout ce qui est visible se trouve dans <body>.', 'Elle indique au navigateur mobile d’utiliser la largeur réelle de l’écran.', '<h1> est le titre principal de la page ; <title> est le nom affiché dans l’onglet.'] },
-  { id: 'web-2', trackId: 'web', title: 'Mettre en forme avec CSS', minutes: 8, blocks: [
-    { type: 'p', text: 'Le CSS décrit l’apparence : couleurs, tailles, espacements, disposition. Une règle CSS choisit des éléments puis leur applique des propriétés.' },
-    { type: 'code', lang: 'css', content: 'body {\n  font-family: system-ui, sans-serif;\n  margin: 0;\n  padding: 16px;\n}\n\nh1 {\n  color: #5b3765;\n  font-size: 2rem;\n}' },
-    { type: 'tip', text: 'Commencez toujours par le téléphone, puis ajoutez des règles pour les grands écrans avec @media (min-width: 768px).' },
-  ], quiz: quiz([
+  { id: 'web-2', trackId: 'web', title: 'Mettre en forme avec CSS', minutes: 8, blocks: lessonContent['web-2'].blocks as LessonBlock[], quiz: quiz([
     ['Que fait le sélecteur h1 ?', ['Il choisit tous les titres principaux', 'Il crée un titre', 'Il supprime les titres'], 0],
     ['Quelle règle cible les écrans larges ?', ['@media (min-width: 768px)', '@import', ':root'], 0],
     ['Quelle propriété change la couleur du texte ?', ['background', 'color', 'font-size'], 1],
   ]), explanations: ['Un sélecteur choisit des éléments existants.', 'min-width applique la règle à partir d’une largeur donnée.', 'color agit sur le texte, background sur le fond.'] },
-  { id: 'web-3', trackId: 'web', title: 'Réagir à un clic avec JavaScript', minutes: 9, blocks: [
-    { type: 'p', text: 'JavaScript rend la page interactive : il écoute les actions du visiteur et modifie la page en réponse.' },
-    { type: 'code', lang: 'javascript', content: "const bouton = document.querySelector('#saluer');\n\nbouton.addEventListener('click', () => {\n  bouton.textContent = 'Merci !';\n});" },
-    { type: 'tip', text: 'Utilisez textContent plutôt qu’innerHTML pour afficher du texte : c’est plus sûr.' },
-  ], quiz: quiz([
+  { id: 'web-3', trackId: 'web', title: 'Réagir à un clic avec JavaScript', minutes: 9, blocks: lessonContent['web-3'].blocks as LessonBlock[], quiz: quiz([
     ['Quelle méthode écoute un clic ?', ['addEventListener', 'querySelector', 'console.log'], 0],
     ['Pourquoi préférer textContent à innerHTML ?', ['C’est plus rapide à écrire', 'Il n’interprète pas le HTML, donc évite les injections', 'Il change la couleur'], 1],
     ['Que renvoie querySelector("#saluer") ?', ['Tous les boutons', 'L’élément dont l’id est saluer', 'Une erreur'], 1],
   ]), explanations: ['addEventListener associe une fonction à un évènement.', 'textContent affiche le texte tel quel : un script inséré par un visiteur ne s’exécutera pas.', 'Le # désigne un id, unique dans la page.'] },
-  { id: 'api-1', trackId: 'api', title: 'Requête et réponse HTTP', minutes: 7, blocks: [
-    { type: 'p', text: 'Une API répond à des requêtes. Chaque requête a une méthode (GET pour lire, POST pour créer), une adresse, et parfois un corps. La réponse a un code d’état et un contenu.' },
-    { type: 'tip', text: 'Les codes 2xx signifient succès, 4xx une erreur de la requête, 5xx une erreur du serveur.' },
-  ], quiz: quiz([
+  { id: 'api-1', trackId: 'api', title: 'Requête et réponse HTTP', minutes: 7, blocks: lessonContent['api-1'].blocks as LessonBlock[], quiz: quiz([
     ['Quelle méthode sert à lire des données ?', ['GET', 'POST', 'DELETE'], 0],
     ['Que signifie un code 404 ?', ['Succès', 'Ressource introuvable', 'Erreur du serveur'], 1],
     ['Un code 500 indique…', ['une erreur du serveur', 'une requête réussie', 'un accès refusé'], 0],
   ]), explanations: ['GET lit, POST crée.', '404 : la ressource demandée n’existe pas.', 'Les codes 5xx viennent du serveur.'] },
-  { id: 'api-2', trackId: 'api', title: 'Appeler une API avec fetch', minutes: 9, blocks: [
-    { type: 'p', text: 'fetch envoie une requête et renvoie une promesse. On attend la réponse, on vérifie le code, puis on lit le JSON.' },
-    { type: 'code', lang: 'javascript', content: "async function chargerQuestions() {\n  const reponse = await fetch('/api/questions');\n  if (!reponse.ok) {\n    throw new Error('Erreur ' + reponse.status);\n  }\n  return reponse.json();\n}" },
-  ], quiz: quiz([
+  { id: 'api-2', trackId: 'api', title: 'Appeler une API avec fetch', minutes: 9, blocks: lessonContent['api-2'].blocks as LessonBlock[], quiz: quiz([
     ['Que vérifie reponse.ok ?', ['Que le code est entre 200 et 299', 'Que le JSON est valide', 'Que la connexion est rapide'], 0],
     ['Que renvoie reponse.json() ?', ['Une chaîne', 'Une promesse des données', 'Un nombre'], 1],
     ['fetch rejette-t-il la promesse sur un code 404 ?', ['Oui', 'Non, il faut vérifier reponse.ok', 'Seulement sur mobile'], 1],
   ]), explanations: ['ok vaut true pour les codes 2xx.', 'json() lit le corps et renvoie une promesse.', 'fetch ne rejette que sur une erreur réseau.'] },
-  { id: 'api-3', trackId: 'api', title: 'Gérer les erreurs et la lenteur', minutes: 8, blocks: [
-    { type: 'p', text: 'Sur une connexion lente, une requête peut prendre plusieurs secondes ou échouer. Affichez un état de chargement, un message clair en cas d’erreur et un bouton pour réessayer.' },
-    { type: 'tip', text: 'Un AbortController permet d’annuler une requête trop longue.' },
-  ], quiz: quiz([
+  { id: 'api-3', trackId: 'api', title: 'Gérer les erreurs et la lenteur', minutes: 8, blocks: lessonContent['api-3'].blocks as LessonBlock[], quiz: quiz([
     ['Que montrer pendant le chargement ?', ['Rien', 'Un indicateur de chargement', 'Une erreur'], 1],
     ['Que doit proposer un écran d’erreur ?', ['Un bouton Réessayer', 'Le code source', 'Une page blanche'], 0],
     ['À quoi sert AbortController ?', ['Annuler une requête', 'Accélérer le réseau', 'Lire le JSON'], 0],
   ]), explanations: ['L’utilisateur doit savoir que quelque chose se passe.', 'Toujours offrir une solution.', 'Il permet d’interrompre une requête.'] },
-  { id: 'git-1', trackId: 'git', title: 'Premiers pas avec Git', minutes: 7, blocks: [
-    { type: 'p', text: 'Git garde l’historique de votre code. Chaque commit est une photo du projet à un instant donné.' },
-    { type: 'code', lang: 'bash', content: 'git init\ngit add .\ngit commit -m "Première version"' },
-  ], quiz: quiz([
+  { id: 'git-1', trackId: 'git', title: 'Premiers pas avec Git', minutes: 7, blocks: lessonContent['git-1'].blocks as LessonBlock[], quiz: quiz([
     ['Que fait git commit ?', ['Il enregistre une version', 'Il supprime un fichier', 'Il met en ligne'], 0],
     ['Quel fichier liste ce que Git doit ignorer ?', ['.gitignore', 'README.md', '.env'], 0],
     ['Faut-il mettre le fichier .env dans Git ?', ['Oui', 'Non, il contient des secrets', 'Seulement en équipe'], 1],
   ]), explanations: ['Un commit enregistre l’état du projet.', '.gitignore liste les fichiers exclus.', 'Les secrets ne doivent jamais être versionnés.'] },
-  { id: 'git-2', trackId: 'git', title: 'Branches et relecture', minutes: 8, blocks: [
-    { type: 'p', text: 'Chaque fonctionnalité se développe sur sa propre branche, puis est relue par un autre membre avant d’être fusionnée.' },
-    { type: 'code', lang: 'bash', content: 'git switch -c questions-reponses\n# ... travail ...\ngit push -u origin questions-reponses' },
-  ], quiz: quiz([
+  { id: 'git-2', trackId: 'git', title: 'Branches et relecture', minutes: 8, blocks: lessonContent['git-2'].blocks as LessonBlock[], quiz: quiz([
     ['Pourquoi travailler sur une branche ?', ['Pour isoler son travail', 'Pour aller plus vite sur le réseau', 'Pour supprimer l’historique'], 0],
     ['Qui relit avant la fusion ?', ['Personne', 'Un autre membre', 'Le serveur'], 1],
     ['Quelle commande crée et ouvre une branche ?', ['git switch -c', 'git log', 'git status'], 0],
   ]), explanations: ['Une branche isole les changements.', 'La relecture par un autre membre limite les erreurs.', 'switch -c crée puis bascule.'] },
-  { id: 'git-3', trackId: 'git', title: 'Mettre en ligne sur un VPS', minutes: 10, blocks: [
-    { type: 'p', text: 'Sur un serveur, on récupère le code, on installe les dépendances, on construit, puis on lance l’application avec un gestionnaire de processus. Nginx reçoit les visiteurs et gère le HTTPS.' },
-    { type: 'code', lang: 'bash', content: 'git pull\nnpm ci\nnpm run build\npm2 restart gamelia' },
-  ], quiz: quiz([
+  { id: 'git-3', trackId: 'git', title: 'Mettre en ligne sur un VPS', minutes: 10, blocks: lessonContent['git-3'].blocks as LessonBlock[], quiz: quiz([
     ['Quel outil garde l’application en marche ?', ['PM2', 'Git', 'CSS'], 0],
     ['Qui gère le HTTPS dans cette architecture ?', ['Nginx', 'Le navigateur', 'Git'], 0],
     ['Que fait npm ci ?', ['Installe exactement les dépendances du fichier de verrouillage', 'Supprime le projet', 'Lance les tests'], 0],

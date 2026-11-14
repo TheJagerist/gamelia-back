@@ -1,0 +1,297 @@
+{
+  "web-1": {
+    "title": "La structure d’une page HTML",
+    "minutes": 6,
+    "blocks": [
+      {
+        "type": "p",
+        "text": "Une page web est un document texte. Le HTML décrit ce qu'il contient : des titres, des paragraphes, des liens, des images. Le navigateur lit ce document et l'affiche."
+      },
+      {
+        "type": "code",
+        "lang": "markup",
+        "content": "<!DOCTYPE html>\n<html lang=\"fr\">\n  <head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title>Ma première page</title>\n  </head>\n  <body>\n    <h1>Bonjour Dakar</h1>\n    <p>Ma première page en ligne.</p>\n  </body>\n</html>"
+      },
+      {
+        "type": "tip",
+        "text": "La ligne meta viewport est indispensable : sans elle, votre page sera minuscule sur téléphone."
+      },
+      {
+        "type": "p",
+        "text": "La partie <head> contient les informations sur la page (titre, encodage). La partie <body> contient ce que voit le visiteur."
+      },
+      {
+        "type": "p",
+        "text": "Les balises les plus utilisées : <h1> pour le titre principal (un seul par page), <h2> et <h3> pour les sous-titres, <p> pour un paragraphe, <a href=\"…\"> pour un lien, <img src=\"…\" alt=\"…\"> pour une image et <ul> avec <li> pour une liste. L'attribut alt décrit l'image : il aide les personnes qui utilisent un lecteur d'écran et s'affiche si l'image ne charge pas."
+      },
+      {
+        "type": "try",
+        "title": "Essayez : modifiez le HTML puis cliquez sur Exécuter",
+        "html": "<h1>Bonjour Dakar</h1>\n<p>Ma première page, modifiée par moi.</p>\n<h2>Mes langages préférés</h2>\n<ul>\n  <li>HTML</li>\n  <li>CSS</li>\n</ul>\n<a href=\"#\">Un lien</a>",
+        "css": "",
+        "js": "",
+        "hint": "Changez le titre, ajoutez un élément <li> à la liste, puis cliquez sur Exécuter."
+      },
+      {
+        "type": "p",
+        "text": "Le titre de l'onglet vient de <title>, pas de <h1>. Un fichier HTML s'enregistre avec l'extension .html et s'ouvre dans n'importe quel navigateur, même sans connexion."
+      }
+    ]
+  },
+  "web-2": {
+    "title": "Mettre en forme avec CSS",
+    "minutes": 8,
+    "blocks": [
+      {
+        "type": "p",
+        "text": "Le CSS décrit l’apparence : couleurs, tailles, espacements, disposition. Une règle CSS choisit des éléments puis leur applique des propriétés."
+      },
+      {
+        "type": "code",
+        "lang": "css",
+        "content": "body {\n  font-family: system-ui, sans-serif;\n  margin: 0;\n  padding: 16px;\n}\n\nh1 {\n  color: #5b3765;\n  font-size: 2rem;\n}"
+      },
+      {
+        "type": "p",
+        "text": "Une règle se lit ainsi : le sélecteur (ici h1) dit quels éléments sont concernés, puis chaque propriété (color, font-size…) reçoit une valeur entre accolades, terminée par un point-virgule. Pour cibler un seul élément, on lui donne une classe dans le HTML (class=\"carte\") et on écrit .carte dans le CSS."
+      },
+      {
+        "type": "try",
+        "title": "Essayez : changez les couleurs puis cliquez sur Exécuter",
+        "html": "<h1>Mon profil</h1>\n<p class=\"carte\">Développeuse web à Libreville.</p>",
+        "css": "body {\n  font-family: system-ui, sans-serif;\n  padding: 16px;\n}\n\nh1 {\n  color: #5b3765;\n}\n\n.carte {\n  background: #f3e8f5;\n  padding: 12px;\n  border-radius: 8px;\n}",
+        "js": "",
+        "hint": "Changez la couleur du titre, le fond de la carte ou l’arrondi des coins (border-radius)."
+      },
+      {
+        "type": "p",
+        "text": "Chaque élément est une boîte : le contenu, puis le padding (l'espace à l'intérieur), la bordure, et le margin (l'espace à l'extérieur). Retenez cette image : padding = à l'intérieur de la boîte, margin = autour."
+      },
+      {
+        "type": "tip",
+        "text": "Commencez toujours par le téléphone, puis ajoutez des règles pour les grands écrans avec @media (min-width: 768px)."
+      },
+      {
+        "type": "code",
+        "lang": "css",
+        "content": ".carte {\n  padding: 12px;\n}\n\n@media (min-width: 768px) {\n  .carte {\n    padding: 32px;\n  }\n}"
+      },
+      {
+        "type": "p",
+        "text": "Ici, la carte a un petit espacement sur téléphone et un grand espacement à partir de 768 pixels de large. C'est ce qu'on appelle un site responsive : une même page qui s'adapte à toutes les tailles d'écran."
+      }
+    ]
+  },
+  "web-3": {
+    "title": "Réagir à un clic avec JavaScript",
+    "minutes": 9,
+    "blocks": [
+      {
+        "type": "p",
+        "text": "JavaScript rend la page interactive : il écoute les actions du visiteur et modifie la page en réponse."
+      },
+      {
+        "type": "code",
+        "lang": "javascript",
+        "content": "const bouton = document.querySelector('#saluer');\n\nbouton.addEventListener('click', () => {\n  bouton.textContent = 'Merci !';\n});"
+      },
+      {
+        "type": "p",
+        "text": "Trois étapes à retenir : on trouve l'élément avec document.querySelector (le # désigne un id, un point désigne une classe), on écoute un évènement avec addEventListener, puis on modifie la page dans la fonction. const déclare une variable qui ne change pas ; let en déclare une qui peut changer."
+      },
+      {
+        "type": "try",
+        "title": "Essayez : un compteur de clics",
+        "html": "<button id=\"compter\">Cliquez-moi</button>\n<p id=\"resultat\">0 clic</p>",
+        "css": "body { font-family: system-ui, sans-serif; padding: 16px; }\nbutton { padding: 8px 14px; font-size: 1rem; }",
+        "js": "let total = 0;\nconst bouton = document.querySelector('#compter');\nconst resultat = document.querySelector('#resultat');\n\nbouton.addEventListener('click', () => {\n  total = total + 1;\n  resultat.textContent = total + ' clic(s)';\n});",
+        "hint": "Faites compter de 5 en 5, ou changez le texte affiché. Une erreur éventuelle s’affiche sous la zone de résultat."
+      },
+      {
+        "type": "tip",
+        "text": "Utilisez textContent plutôt qu’innerHTML pour afficher du texte : c’est plus sûr."
+      },
+      {
+        "type": "p",
+        "text": "Pourquoi ? innerHTML interprète le texte comme du HTML : si un visiteur écrit une balise <script> dans un champ et que vous l'affichez avec innerHTML, elle peut s'exécuter. textContent affiche le texte tel quel, sans rien interpréter."
+      }
+    ]
+  },
+  "api-1": {
+    "title": "Requête et réponse HTTP",
+    "minutes": 7,
+    "blocks": [
+      {
+        "type": "p",
+        "text": "Une API répond à des requêtes. Chaque requête a une méthode (GET pour lire, POST pour créer), une adresse, et parfois un corps. La réponse a un code d’état et un contenu."
+      },
+      {
+        "type": "code",
+        "lang": "http",
+        "content": "GET /questions HTTP/1.1\nHost: gamelia.exemple.com\n\nHTTP/1.1 200 OK\nContent-Type: application/json\n\n[{\"id\": 1, \"titre\": \"Comment utiliser fetch ?\"}]"
+      },
+      {
+        "type": "p",
+        "text": "Les méthodes courantes : GET lit des données, POST en crée, PUT ou PATCH en modifie, DELETE en supprime. Le contenu échangé est presque toujours du JSON, un format texte facile à lire pour un humain comme pour un programme."
+      },
+      {
+        "type": "tip",
+        "text": "Les codes 2xx signifient succès, 4xx une erreur de la requête, 5xx une erreur du serveur."
+      },
+      {
+        "type": "p",
+        "text": "Quelques codes à connaître : 200 (succès), 201 (créé), 400 (requête invalide), 401 (non connecté), 403 (accès refusé), 404 (introuvable) et 500 (erreur du serveur). Quand une erreur 4xx arrive, le problème vient de la requête : à vous de la corriger. Avec une 5xx, le serveur a un souci."
+      }
+    ]
+  },
+  "api-2": {
+    "title": "Appeler une API avec fetch",
+    "minutes": 9,
+    "blocks": [
+      {
+        "type": "p",
+        "text": "fetch envoie une requête et renvoie une promesse. On attend la réponse, on vérifie le code, puis on lit le JSON."
+      },
+      {
+        "type": "code",
+        "lang": "javascript",
+        "content": "async function chargerQuestions() {\n  const reponse = await fetch('/api/questions');\n  if (!reponse.ok) {\n    throw new Error('Erreur ' + reponse.status);\n  }\n  return reponse.json();\n}"
+      },
+      {
+        "type": "p",
+        "text": "Une promesse est une valeur qui arrivera plus tard. Le mot await met la fonction en pause jusqu'à l'arrivée de la valeur, et il ne fonctionne que dans une fonction déclarée avec async. reponse.json() lit le corps de la réponse et renvoie lui aussi une promesse, d'où le await ou le return."
+      },
+      {
+        "type": "tip",
+        "text": "fetch ne signale une erreur que si le réseau est coupé. Un code 404 ou 500 ne déclenche pas d’erreur tout seul : vérifiez toujours reponse.ok."
+      },
+      {
+        "type": "code",
+        "lang": "javascript",
+        "content": "async function creerQuestion(titre) {\n  const reponse = await fetch('/api/questions', {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ titre }),\n  });\n  return reponse.json();\n}"
+      },
+      {
+        "type": "p",
+        "text": "Pour envoyer des données, on précise la méthode, l'en-tête Content-Type et le corps, transformé en texte par JSON.stringify."
+      }
+    ]
+  },
+  "api-3": {
+    "title": "Gérer les erreurs et la lenteur",
+    "minutes": 8,
+    "blocks": [
+      {
+        "type": "p",
+        "text": "Sur une connexion lente, une requête peut prendre plusieurs secondes ou échouer. Affichez un état de chargement, un message clair en cas d’erreur et un bouton pour réessayer."
+      },
+      {
+        "type": "code",
+        "lang": "javascript",
+        "content": "async function charger() {\n  afficher('Chargement…');\n  try {\n    const donnees = await chargerQuestions();\n    afficherListe(donnees);\n  } catch (erreur) {\n    afficher('Impossible de charger. Vérifiez votre connexion.');\n    afficherBoutonReessayer(charger);\n  }\n}"
+      },
+      {
+        "type": "p",
+        "text": "try / catch attrape une erreur au moment où elle arrive, pour afficher un message utile au lieu d'une page cassée. Écrivez des messages qui disent quoi faire (« Vérifiez votre connexion ») plutôt que des termes techniques."
+      },
+      {
+        "type": "tip",
+        "text": "Un AbortController permet d’annuler une requête trop longue."
+      },
+      {
+        "type": "code",
+        "lang": "javascript",
+        "content": "const controle = new AbortController();\nconst minuterie = setTimeout(() => controle.abort(), 8000);\n\nconst reponse = await fetch('/api/questions', { signal: controle.signal });\nclearTimeout(minuterie);"
+      },
+      {
+        "type": "p",
+        "text": "Ici, la requête est annulée au bout de 8 secondes. Sur les réseaux mobiles, c'est un réflexe utile : mieux vaut proposer de réessayer qu'afficher un chargement sans fin."
+      }
+    ]
+  },
+  "git-1": {
+    "title": "Premiers pas avec Git",
+    "minutes": 7,
+    "blocks": [
+      {
+        "type": "p",
+        "text": "Git garde l’historique de votre code. Chaque commit est une photo du projet à un instant donné."
+      },
+      {
+        "type": "code",
+        "lang": "bash",
+        "content": "git init\ngit add .\ngit commit -m \"Première version\""
+      },
+      {
+        "type": "p",
+        "text": "git init démarre le suivi dans un dossier. git add . prépare tous les fichiers modifiés, et git commit les enregistre avec un message qui explique ce que vous avez changé. git status montre où vous en êtes et git log affiche l'historique."
+      },
+      {
+        "type": "p",
+        "text": "Certains fichiers ne doivent jamais entrer dans Git : les dépendances téléchargées (node_modules) et surtout le fichier .env, qui contient des mots de passe et des clés secrètes. On les liste dans un fichier nommé .gitignore."
+      },
+      {
+        "type": "code",
+        "lang": "bash",
+        "content": "# .gitignore\nnode_modules/\n.env\n.next/"
+      },
+      {
+        "type": "tip",
+        "text": "Si un secret a été envoyé par erreur sur GitHub, supprimer le fichier ne suffit pas : changez immédiatement la clé, car elle reste visible dans l’historique."
+      }
+    ]
+  },
+  "git-2": {
+    "title": "Branches et relecture",
+    "minutes": 8,
+    "blocks": [
+      {
+        "type": "p",
+        "text": "Chaque fonctionnalité se développe sur sa propre branche, puis est relue par un autre membre avant d’être fusionnée."
+      },
+      {
+        "type": "code",
+        "lang": "bash",
+        "content": "git switch -c questions-reponses\n# ... travail ...\ngit push -u origin questions-reponses"
+      },
+      {
+        "type": "p",
+        "text": "Une branche est une copie de travail isolée : vous pouvez essayer, vous tromper et corriger sans gêner personne. Une fois la fonctionnalité terminée, vous ouvrez une demande de fusion (pull request) sur GitHub."
+      },
+      {
+        "type": "p",
+        "text": "La relecture par un autre membre est l'étape la plus utile du travail en équipe : un deuxième regard attrape des erreurs, des oublis et des problèmes de sécurité avant qu'ils n'atteignent le site. Relisez avec bienveillance : commentez le code, pas la personne."
+      },
+      {
+        "type": "tip",
+        "text": "Des messages de commit courts et précis (« Ajoute le bouton Réessayer ») rendent la relecture bien plus rapide."
+      }
+    ]
+  },
+  "git-3": {
+    "title": "Mettre en ligne sur un VPS",
+    "minutes": 10,
+    "blocks": [
+      {
+        "type": "p",
+        "text": "Sur un serveur, on récupère le code, on installe les dépendances, on construit, puis on lance l’application avec un gestionnaire de processus. Nginx reçoit les visiteurs et gère le HTTPS."
+      },
+      {
+        "type": "code",
+        "lang": "bash",
+        "content": "git pull\nnpm ci\nnpm run build\npm2 restart gamelia"
+      },
+      {
+        "type": "p",
+        "text": "git pull récupère la dernière version. npm ci installe exactement les versions notées dans le fichier de verrouillage, ce qui rend l'installation reproductible. npm run build prépare le site pour la production. Un gestionnaire de processus comme PM2 (ou systemd) relance l'application si elle s'arrête."
+      },
+      {
+        "type": "p",
+        "text": "Nginx se place devant l'application : il reçoit les visiteurs sur les ports 80 et 443, gère le certificat HTTPS et transmet les requêtes à votre application, qui n'écoute que sur le serveur lui-même."
+      },
+      {
+        "type": "tip",
+        "text": "Les clés secrètes restent dans un fichier .env sur le serveur, jamais dans Git. Ouvrez seulement les ports dont vous avez besoin (SSH, HTTP, HTTPS)."
+      }
+    ]
+  }
+}

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Lightbulb } from 'lucide-react';
 import { Code } from '@/components/code';
 import { Quiz } from '@/components/quiz';
+import { TryEditor } from '@/components/try-editor';
 import { Async, PageHeader, Skeleton } from '@/components/ui';
 import { api } from '@/lib/api';
 import { useResource } from '@/lib/hooks';
@@ -32,6 +33,8 @@ export default function LessonPage({ params }: { params: { piste: string; lecon:
                 <p key={i}>{b.text}</p>
               ) : b.type === 'code' ? (
                 <Code key={i} code={b.content} lang={b.lang} />
+              ) : b.type === 'try' ? (
+                <TryEditor key={i} title={b.title} html={b.html} css={b.css} js={b.js} hint={b.hint} />
               ) : (
                 <aside key={i} className="flex gap-3 rounded-lg border-l-4 border-accent bg-accent-soft p-4 text-[15px]">
                   <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-accent-ink" aria-hidden />

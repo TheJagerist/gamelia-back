@@ -49,7 +49,7 @@ function toPublicUser(row, prefix = '') {
 async function loadMe(userId) {
   const { rows } = await query(
     `SELECT u.id, u.username, u.name, u.email, u.role, u.country, u.city, u.bio, u.avatar_url, u.skills,
-            u.level, u.points, u.github_verified, u.has_password, u.joined_at, u.company, u.recruiter_status,
+            u.level, u.points, u.github_verified, u.has_password, (u.google_id IS NOT NULL) AS google_linked, u.joined_at, u.company, u.recruiter_status,
             COALESCE((SELECT json_agg(json_build_object('kind', dl.kind, 'label', dl.label, 'url', dl.url) ORDER BY dl.position)
                       FROM declared_links dl WHERE dl.user_id = u.id), '[]'::json) AS links,
             COALESCE((SELECT array_agg(ft.tag ORDER BY ft.tag) FROM followed_tags ft WHERE ft.user_id = u.id), '{}') AS following
@@ -72,6 +72,7 @@ async function loadMe(userId) {
     level: u.level,
     points: u.points,
     githubVerified: u.github_verified,
+    googleLinked: u.google_linked,
     hasPassword: u.has_password, // faux pour un compte créé avec GitHub tant qu'il n'a pas défini de mot de passe
     links: u.links,
     joinedAt: u.joined_at,

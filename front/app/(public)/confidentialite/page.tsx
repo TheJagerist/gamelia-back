@@ -85,6 +85,9 @@ export default function ConfidentialitePage() {
             <strong>GitHub :</strong> si vous faites vérifier votre compte, Gamelia lit la présentation publique du compte GitHub que vous indiquez. Si vous choisissez « Continuer avec GitHub », GitHub transmet à Gamelia votre identifiant GitHub, votre nom d&apos;utilisateur, votre nom et votre adresse e-mail vérifiée, et rien d&apos;autre : Gamelia n&apos;accède ni à vos dépôts ni à votre mot de passe GitHub, et ne garde pas le jeton de connexion.
           </li>
           <li>
+            <strong>Google :</strong> si vous choisissez « Continuer avec Google », Google transmet à Gamelia un identifiant propre à votre compte Google, votre nom et votre adresse e-mail (seulement si Google l&apos;a vérifiée), et rien d&apos;autre : Gamelia n&apos;accède ni à votre messagerie Gmail, ni à vos fichiers, ni à votre mot de passe Google, et ne garde pas le jeton de connexion.
+          </li>
+          <li>
             <strong>Envoi d&apos;e-mails :</strong> pour vous écrire (bienvenue, validation d&apos;un compte recruteur, réinitialisation du mot de passe), Gamelia transmet votre nom et votre adresse e-mail à un prestataire d&apos;envoi d&apos;e-mails, qui ne s&apos;en sert que pour les acheminer. Ces messages ne contiennent ni publicité ni information sur vos contenus.
           </li>
           <li>

@@ -29,7 +29,7 @@ function recruiterApproved({ name, company }) {
   const text = [
     `Bonjour ${name},`,
     '',
-    `Bonne nouvelle : le compte recruteur de ${company || 'votre entreprise'} a été validé par l'équipe Gamelia.`,
+    `Bonne nouvelle : l'équipe Gamelia a vérifié votre identité et validé le compte recruteur de ${company || 'votre entreprise'}.`,
     'Vous pouvez dès maintenant vous connecter, publier vos défis et contacter des développeurs.',
     '',
     `Se connecter : ${url}`,
@@ -39,7 +39,7 @@ function recruiterApproved({ name, company }) {
   const html = layout(
     'Votre compte recruteur est validé',
     `<p>Bonjour ${esc(name)},</p>
-<p>Bonne nouvelle : le compte recruteur de <strong>${esc(company || 'votre entreprise')}</strong> a été validé par l'équipe Gamelia.
+<p>Bonne nouvelle : l'équipe Gamelia a vérifié votre identité et validé le compte recruteur de <strong>${esc(company || 'votre entreprise')}</strong>.
 Vous pouvez dès maintenant vous connecter, publier vos défis et contacter des développeurs.</p>
 <p style="margin:24px 0"><a href="${esc(url)}" style="background:#16a34a;color:#ffffff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold">Se connecter</a></p>
 <p>L'équipe Gamelia</p>`

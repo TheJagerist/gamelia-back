@@ -9,6 +9,8 @@ import { SelectField, TextField, cx } from '@/components/ui';
 import { api, ApiError, messageFor } from '@/lib/api';
 import { COUNTRIES } from '@/lib/constants';
 import { githubStartUrl } from '@/lib/github-oauth';
+import { googleStartUrl } from '@/lib/google-oauth';
+import { GoogleIcon } from '@/components/google-icon';
 import { ROLE_HOME, useSession } from '@/lib/session';
 
 type Role = 'developpeur' | 'recruteur';
@@ -39,10 +41,12 @@ export default function InscriptionPage() {
   const [accept, setAccept] = useState(false);
   const [acceptTouched, setAcceptTouched] = useState(false);
   const [githubOn, setGithubOn] = useState(false);
+  const [googleOn, setGoogleOn] = useState(false);
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get('role') === 'recruteur') setRole('recruteur');
     void api.auth.githubEtat().then((r) => setGithubOn(r.enabled));
+    void api.auth.googleEtat().then((r) => setGoogleOn(r.enabled));
   }, []);
   // Déjà connecté en arrivant sur la page : retour à son espace. Après une inscription réussie, en revanche,
   // on laisse la redirection vers le profil (« bienvenue ») se faire.
@@ -196,12 +200,20 @@ export default function InscriptionPage() {
         </button>
         <p className="text-center text-[13px] text-muted">Vos données servent uniquement à faire fonctionner votre compte Gamelia.</p>
       </form>
-      {githubOn && role === 'developpeur' && (
-        <div className="mt-6 border-t border-line pt-5">
-          <a className="btn btn-secondary w-full" href={githubStartUrl('connexion')}>
-            <Github className="h-5 w-5" aria-hidden />
-            S&apos;inscrire avec GitHub
-          </a>
+      {(googleOn || githubOn) && role === 'developpeur' && (
+        <div className="mt-6 space-y-3 border-t border-line pt-5">
+          {googleOn && (
+            <a className="btn btn-secondary w-full" href={googleStartUrl('connexion')}>
+              <GoogleIcon className="h-5 w-5" />
+              S&apos;inscrire avec Google
+            </a>
+          )}
+          {githubOn && (
+            <a className="btn btn-secondary w-full" href={githubStartUrl('connexion')}>
+              <Github className="h-5 w-5" aria-hidden />
+              S&apos;inscrire avec GitHub
+            </a>
+          )}
         </div>
       )}
     </AuthCard>

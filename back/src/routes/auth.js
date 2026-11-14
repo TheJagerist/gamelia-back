@@ -219,5 +219,7 @@ router.post(
 
 // Connexion avec GitHub (OAuth) : /auth/github/etat, /start, /callback, /en-attente, /finaliser.
 router.use('/github', require('./github-oauth'));
+// Connexion avec Google (OAuth) : /auth/google/etat, /start, /callback, /en-attente, /finaliser.
+router.use('/google', require('./google-oauth'));
 
 module.exports = router;

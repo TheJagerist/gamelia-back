@@ -53,6 +53,10 @@ export const api = {
     githubEtat: async (): Promise<{ enabled: boolean }> => (MOCK ? { enabled: false } : http<{ enabled: boolean }>('GET', '/auth/github/etat').catch(() => ({ enabled: false }))),
     githubPending: async (): Promise<{ login: string; name: string; email: string }> => http('GET', '/auth/github/en-attente'),
     githubFinaliser: async (input: { country: string; acceptTerms: boolean }): Promise<User> => http('POST', '/auth/github/finaliser', input),
+    // Connexion avec Google (OAuth) : même principe que GitHub ; absente de la démonstration.
+    googleEtat: async (): Promise<{ enabled: boolean }> => (MOCK ? { enabled: false } : http<{ enabled: boolean }>('GET', '/auth/google/etat').catch(() => ({ enabled: false }))),
+    googlePending: async (): Promise<{ name: string; email: string }> => http('GET', '/auth/google/en-attente'),
+    googleFinaliser: async (input: { country: string; acceptTerms: boolean }): Promise<User> => http('POST', '/auth/google/finaliser', input),
   },
 
   settings: {

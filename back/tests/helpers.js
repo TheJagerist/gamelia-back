@@ -202,6 +202,76 @@ async function startFakeGithub(port = 0) {
   return { server, url: `http://127.0.0.1:${server.address().port}`, bios, grant, approveNext: (p) => (next = p), stop: () => server.close() };
 }
 
+// Faux Google : joue le rôle de accounts.google.com (autorisation), oauth2.googleapis.com (jeton) et openidconnect (profil).
+//   grant({ sub, email, email_verified, name }) : prépare un compte Google et renvoie le « code » reçu au retour.
+//   approveNext(profil | null) : compte approuvé à la prochaine autorisation (null = le membre refuse).
+async function startFakeGoogle(port = 0) {
+  const http = require('node:http');
+  const codes = new Map();
+  const tokens = new Map();
+  let seq = 0;
+  let next = null;
+  const grant = (profile) => {
+    const code = `gcode_${++seq}`;
+    codes.set(code, { name: '', email_verified: true, ...profile });
+    return code;
+  };
+  const server = http.createServer((req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    const send = (status, body) => {
+      res.statusCode = status;
+      res.end(JSON.stringify(body));
+    };
+    if (req.method === 'POST' && req.url === '/token') {
+      let raw = '';
+      req.on('data', (d) => (raw += d));
+      req.on('end', () => {
+        const b = Object.fromEntries(new URLSearchParams(raw));
+        const profile = codes.get(b.code);
+        if (b.client_id !== OAUTH_CLIENT.id || b.client_secret !== OAUTH_CLIENT.secret) return send(401, { error: 'invalid_client' });
+        if (b.grant_type !== 'authorization_code' || !b.redirect_uri || !profile) return send(400, { error: 'invalid_grant' });
+        codes.delete(b.code); // un code ne sert qu'une fois
+        const token = `ya29.test_${++seq}`;
+        tokens.set(token, profile);
+        send(200, { access_token: token, token_type: 'Bearer', expires_in: 3599, scope: 'openid email profile' });
+      });
+      return;
+    }
+    if (req.method === 'GET' && req.url.startsWith('/authorize')) {
+      const q = new URL(req.url, 'http://x').searchParams;
+      const back = new URL(q.get('redirect_uri') || 'http://localhost/');
+      if (q.get('client_id') !== OAUTH_CLIENT.id) {
+        res.statusCode = 400;
+        return res.end('{"error":"invalid_client"}');
+      }
+      if (!next) back.searchParams.set('error', 'access_denied');
+      else back.searchParams.set('code', grant(next));
+      back.searchParams.set('state', q.get('state') || '');
+      res.statusCode = 302;
+      res.setHeader('Location', back.toString());
+      return res.end();
+    }
+    if (req.method === 'POST' && req.url === '/__approve-next') {
+      let raw = '';
+      req.on('data', (d) => (raw += d));
+      req.on('end', () => {
+        next = raw ? JSON.parse(raw) : null;
+        send(200, { ok: true });
+      });
+      return;
+    }
+    if (req.url === '/userinfo') {
+      const auth = /^Bearer (.+)$/.exec(req.headers.authorization || '');
+      const profile = auth && tokens.get(auth[1]);
+      if (!profile) return send(401, { error: 'invalid_token' });
+      return send(200, profile);
+    }
+    send(404, { error: 'not_found' });
+  });
+  await new Promise((r) => server.listen(port, '127.0.0.1', r));
+  return { server, url: `http://127.0.0.1:${server.address().port}`, grant, approveNext: (p) => (next = p), stop: () => server.close() };
+}
+
 // Parcours complet de vérification GitHub pour un client connecté : demande du code, code placé dans la bio, vérification.
 async function verifyGithub(client, github, username = unique('gh').replace(/[^a-z0-9]/gi, '')) {
   const code = (await client.post('/moi/github/code', { username })).body.code;
@@ -326,4 +396,4 @@ async function startFakeSmtp() {
   };
 }
 
-module.exports = { OAUTH_CLIENT, assertSafeDatabase, prepareDatabase, startServer, startFakeGithub, startFakeSmtp, verifyGithub, Client, register, createAdmin, cleanup, PASSWORD, TEST_DOMAIN };
+module.exports = { OAUTH_CLIENT, assertSafeDatabase, prepareDatabase, startServer, startFakeGithub, startFakeGoogle, startFakeSmtp, verifyGithub, Client, register, createAdmin, cleanup, PASSWORD, TEST_DOMAIN };

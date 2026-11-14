@@ -22,6 +22,10 @@ const tracks = [
   ['git', 'Git et mise en ligne', 'Intermédiaire', 'Versionner son code, travailler en équipe et mettre un projet en ligne.', 2],
 ];
 
+// Texte et exemples de chaque leçon (blocs p / code / tip / try) : src/db/lessons-content.json.
+// Sans ce fichier, les leçons s'affichent vides sur le site réel.
+const lessonContent = require('./lessons-content.json');
+
 // [id, trackId, title, minutes, position]
 const lessons = [
   ['web-1', 'web', 'La structure d’une page HTML', 6, 0],
@@ -163,9 +167,9 @@ async function run() {
 
     for (const [id, trackId, title, minutes, position] of lessons) {
       await client.query(
-        `INSERT INTO lessons (id, track_id, title, minutes, position, blocks) VALUES ($1,$2,$3,$4,$5,'[]')
-         ON CONFLICT (id) DO UPDATE SET track_id=$2, title=$3, minutes=$4, position=$5`,
-        [id, trackId, title, minutes, position]
+        `INSERT INTO lessons (id, track_id, title, minutes, position, blocks) VALUES ($1,$2,$3,$4,$5,$6::jsonb)
+         ON CONFLICT (id) DO UPDATE SET track_id=$2, title=$3, minutes=$4, position=$5, blocks=$6::jsonb`,
+        [id, trackId, title, minutes, position, JSON.stringify(lessonContent[id]?.blocks ?? [])]
       );
       const quizItems = lessonQuiz[id] || [];
       await client.query('DELETE FROM lesson_quiz_questions WHERE lesson_id = $1', [id]);

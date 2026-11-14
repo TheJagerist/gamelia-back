@@ -8,7 +8,9 @@ import { AuthCard } from '@/components/auth-card';
 import { useToast } from '@/components/toast';
 import { TextField } from '@/components/ui';
 import { api, ApiError, messageFor } from '@/lib/api';
-import { githubErrorMessage, githubStartUrl } from '@/lib/github-oauth';
+import { githubStartUrl } from '@/lib/github-oauth';
+import { googleStartUrl, oauthErrorMessage } from '@/lib/google-oauth';
+import { GoogleIcon } from '@/components/google-icon';
 import { ROLE_HOME, useSession } from '@/lib/session';
 
 // Comptes de démonstration : développement local uniquement. La condition est écrite en toutes lettres pour que
@@ -29,17 +31,19 @@ export default function ConnexionPage() {
   const [error, setError] = useState<ApiError | null>(null);
   const [suite, setSuite] = useState<string | null>(null);
   const [githubOn, setGithubOn] = useState(false);
+  const [googleOn, setGoogleOn] = useState(false);
 
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     const s = q.get('suite');
     // On n'accepte que des chemins internes, pour éviter les redirections vers un autre site.
     if (s && s.startsWith('/') && !s.startsWith('//')) setSuite(s);
-    // Retour de GitHub en erreur : l'API renvoie ici avec ?erreur=<code>.
+    // Retour de GitHub ou de Google en erreur : l'API renvoie ici avec ?erreur=<code>.
     const code = q.get('erreur');
-    const msg = githubErrorMessage(code);
+    const msg = oauthErrorMessage(code) || (code ? 'La connexion a échoué. Réessayez.' : null);
     if (code && msg) setError(new ApiError(400, msg, code));
     void api.auth.githubEtat().then((r) => setGithubOn(r.enabled));
+    void api.auth.googleEtat().then((r) => setGoogleOn(r.enabled));
   }, []);
 
   useEffect(() => {
@@ -113,14 +117,22 @@ export default function ConnexionPage() {
           {busy ? 'Connexion…' : 'Se connecter'}
         </button>
       </form>
-      {githubOn && (
-        <div className="mt-6 border-t border-line pt-5">
-          {/* Navigation complète (pas un appel fetch) : le navigateur part vers GitHub puis revient sur le site. */}
-          <a className="btn btn-secondary w-full" href={githubStartUrl('connexion')}>
-            <Github className="h-5 w-5" aria-hidden />
-            Continuer avec GitHub
-          </a>
-          <p className="mt-2 text-center text-[13px] text-muted">Aucun mot de passe GitHub n&apos;est transmis à Gamelia.</p>
+      {(googleOn || githubOn) && (
+        <div className="mt-6 space-y-3 border-t border-line pt-5">
+          {/* Navigation complète (pas un appel fetch) : le navigateur part vers Google ou GitHub puis revient sur le site. */}
+          {googleOn && (
+            <a className="btn btn-secondary w-full" href={googleStartUrl('connexion')}>
+              <GoogleIcon className="h-5 w-5" />
+              Continuer avec Google
+            </a>
+          )}
+          {githubOn && (
+            <a className="btn btn-secondary w-full" href={githubStartUrl('connexion')}>
+              <Github className="h-5 w-5" aria-hidden />
+              Continuer avec GitHub
+            </a>
+          )}
+          <p className="text-center text-[13px] text-muted">Aucun mot de passe Google ou GitHub n&apos;est transmis à Gamelia.</p>
         </div>
       )}
     </AuthCard>

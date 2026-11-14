@@ -23,7 +23,8 @@ export interface User {
   level: Level;
   points: number;
   githubVerified: boolean;
-  hasPassword?: boolean; // false : compte créé avec GitHub, sans mot de passe défini
+  hasPassword?: boolean; // false : compte créé avec GitHub ou Google, sans mot de passe défini
+  googleLinked?: boolean; // un compte Google est relié à ce compte
   links: DeclaredLink[];
   joinedAt: string;
   company?: string; // recruteur
@@ -145,7 +146,9 @@ export interface QuizResult {
 export type LessonBlock =
   | { type: 'p'; text: string }
   | { type: 'code'; lang: string; content: string }
-  | { type: 'tip'; text: string };
+  | { type: 'tip'; text: string }
+  // Éditeur « Essayer » : HTML, CSS et JavaScript modifiables, résultat dans un cadre isolé.
+  | { type: 'try'; title: string; html: string; css: string; js: string; hint?: string };
 
 export interface Lesson {
   id: string;

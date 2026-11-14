@@ -53,7 +53,8 @@ if [[ -n "$TEST" ]]; then
   [[ "$TEST" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]] || { echo "Adresse d'essai invalide."; exit 1; }
   echo -n "E-mail d'essai : "
   RUN_AS=(); [[ $EUID -eq 0 ]] && id gamelia >/dev/null 2>&1 && RUN_AS=(sudo -u gamelia)
-  if (cd "$APP_BACK" && TEST_TO="$TEST" "${RUN_AS[@]}" node -e "
+  # `env` : sudo efface les variables d'environnement, il faut donc passer l'adresse après lui.
+  if (cd "$APP_BACK" && "${RUN_AS[@]}" env TEST_TO="$TEST" node -e "
     const { sendMail } = require('./src/services/mailer');
     sendMail({ to: process.env.TEST_TO, subject: 'Gamelia : e-mail d\'essai', text: 'Si vous lisez ce message, l\'envoi d\'e-mails de Gamelia fonctionne.' })
       .then((r) => { console.log(r.sent ? 'envoyé, vérifiez la boîte de réception (et les courriers indésirables).' : 'ÉCHEC (' + r.reason + '), voir : journalctl -u gamelia-api -n 30'); process.exit(r.sent ? 0 : 1); });

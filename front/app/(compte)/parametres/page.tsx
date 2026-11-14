@@ -5,7 +5,9 @@ import { useEffect, useState } from 'react';
 import { Bell, Globe, KeyRound, Lock, Monitor, Moon, Palette, Sun, Trash2, UserRound } from 'lucide-react';
 import { useToast } from '@/components/toast';
 import { Async, Dialog, PageHeader, TextField, cx } from '@/components/ui';
+import { GoogleIcon } from '@/components/google-icon';
 import { api, ApiError, messageFor } from '@/lib/api';
+import { googleErrorMessage, googleStartUrl } from '@/lib/google-oauth';
 import { useResource } from '@/lib/hooks';
 import { ROLE_LABEL, useSession } from '@/lib/session';
 import { applyThemePref, themePref, type ThemePref } from '@/lib/theme';
@@ -81,12 +83,27 @@ export default function ParametresPage() {
 }
 
 function SettingsForm({ initial }: { initial: Settings }) {
-  const { user, logout } = useSession();
+  const { user, logout, setUser } = useSession();
   const toast = useToast();
   const router = useRouter();
   const [s, setS] = useState<Settings>(initial);
   const [theme, setTheme] = useState<ThemePref>('systeme');
+  const [googleOn, setGoogleOn] = useState(false);
   useEffect(() => setTheme(themePref()), []);
+  useEffect(() => {
+    void api.auth.googleEtat().then((r) => setGoogleOn(r.enabled));
+    // Retour de Google après « Relier mon compte Google » : ?google=ok ou ?google=<code d'erreur>.
+    const g = new URLSearchParams(window.location.search).get('google');
+    if (!g) return;
+    if (g === 'ok') {
+      void api.auth.me().then((u) => {
+        if (u) setUser(u);
+      });
+      toast('Compte Google relié. Vous pouvez maintenant vous connecter avec Google.');
+    } else toast(googleErrorMessage(g) || 'La liaison avec Google a échoué.', 'error');
+    window.history.replaceState(null, '', window.location.pathname);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   if (!user) return null;
   const isDev = user.role === 'developpeur';
 
@@ -127,6 +144,26 @@ function SettingsForm({ initial }: { initial: Settings }) {
           <Link href={isDev ? '/profil' : '/recruteur/compte'} className="btn btn-secondary btn-sm mt-5">
             Modifier mon profil
           </Link>
+        )}
+        {googleOn && user.role !== 'admin' && (
+          <div className="mt-6 border-t border-line pt-5">
+            <h3 className="text-base">Connexion avec Google</h3>
+            {user.googleLinked ? (
+              <p className="mt-1 flex items-center gap-2 text-sm text-muted">
+                <GoogleIcon className="h-4 w-4 shrink-0" />
+                Un compte Google est relié : vous pouvez vous connecter avec le bouton « Continuer avec Google ».
+              </p>
+            ) : (
+              <>
+                <p className="mt-1 text-sm text-muted">Reliez votre compte Google pour vous connecter en un clic, sans mot de passe. Gamelia ne reçoit que votre nom et votre adresse e-mail.</p>
+                {/* Navigation complète : le navigateur part vers Google puis revient sur cette page. */}
+                <a className="btn btn-secondary btn-sm mt-3 w-fit" href={googleStartUrl('lier')}>
+                  <GoogleIcon className="h-4 w-4" />
+                  Relier mon compte Google
+                </a>
+              </>
+            )}
+          </div>
         )}
       </Section>
 
@@ -241,7 +278,7 @@ function PasswordForm() {
       }}
     >
       {first ? (
-        <p className="rounded-lg bg-sunken p-3 text-sm">Votre compte a été créé avec GitHub et n&apos;a pas encore de mot de passe. Vous pouvez en définir un pour vous connecter aussi avec votre adresse e-mail.</p>
+        <p className="rounded-lg bg-sunken p-3 text-sm">Votre compte a été créé avec GitHub ou Google et n&apos;a pas encore de mot de passe. Vous pouvez en définir un pour vous connecter aussi avec votre adresse e-mail.</p>
       ) : (
         <TextField label="Mot de passe actuel" type="password" autoComplete="current-password" value={f.current} onChange={(e) => setF({ ...f, current: e.target.value })} error={errors.current} />
       )}

@@ -18,6 +18,8 @@ Il vous faut quatre choses.
 
 ## Étape 1 : envoyer le projet sur le serveur
 
+> **Windows** : si PowerShell répond « `scp` n'est pas reconnu », utilisez celui de Git : `& "C:\Program Files\Git\usr\bin\scp.exe" ...` (et `ssh.exe` dans le même dossier). Si le serveur répond « Permission denied (publickey) », il n'accepte que la **clé SSH** fournie par l'hébergeur : ajoutez `-i "chemin\vers\la_cle.pem"` aux commandes `scp` et `ssh`.
+
 Sur votre PC, dans le terminal de VS Code, placez-vous dans le dossier qui contient `gamelia-final.zip`, puis (remplacez l'adresse IP) :
 
 ```
@@ -114,16 +116,51 @@ Sans cette étape, le site fonctionne normalement avec l'e-mail et le mot de pas
 
 Ne collez jamais le secret dans une conversation ou une capture d'écran.
 
+## Étape 7 bis (facultative) : activer « Continuer avec Google »
+
+À faire **après** que le site répond sur son vrai nom de domaine (voir plus bas), car Google exige une adresse de retour fixe en `https://`. Sans cette étape, le site fonctionne normalement avec l'e-mail, le mot de passe et GitHub.
+
+1. Sur https://console.cloud.google.com : créer un projet (nom : `Gamelia`).
+2. **API et services → Écran de consentement OAuth** : type « Externe », nom de l'application `Gamelia`, adresse d'assistance et adresse du développeur = votre e-mail. Domaine autorisé : le domaine principal du site (par exemple `ge-tech.site`). Droits demandés : seulement `openid`, `email` et `profile` (aucun droit sensible).
+3. **Identifiants → Créer des identifiants → ID client OAuth** : type « Application Web ».
+   - Origines JavaScript autorisées : `https://votre-domaine`
+   - URI de redirection autorisés : `https://votre-domaine/api/auth/google/callback` (exactement, sans espace)
+4. Copiez l'**ID client** et le **code secret** (la page peut rester ouverte).
+5. Sur le serveur : `sudo bash /home/gamelia/gamelia/back/deploy/definir-google-oauth.sh`. Collez l'ID client, puis le secret (saisie masquée). Le script vérifie le couple auprès de Google, redémarre l'API et affiche `{"enabled":true}`.
+6. Testez dans une fenêtre privée : page de connexion → « Continuer avec Google ».
+
+À savoir, pour ne pas être surpris :
+- **Mode « Test »** : tant que l'écran de consentement est en « Test », seules les adresses ajoutées dans « Utilisateurs test » (100 maximum) peuvent se connecter. Pour que tout le monde puisse, cliquez **Publier l'application** (« En production »). Avec uniquement les droits `openid`, `email` et `profile`, Google ne demande normalement pas de vérification longue ; il peut toutefois demander de prouver que vous possédez le domaine (Google Search Console, enregistrement DNS de type TXT à ajouter par la personne qui gère le domaine).
+- Une personne ne peut pas être reliée automatiquement à un compte existant parce que son adresse e-mail est la même : elle doit d'abord se connecter avec son mot de passe, puis cliquer **Relier mon compte Google** dans Paramètres. C'est voulu (sécurité).
+- Si le nom de domaine change : l'adresse de retour est recalculée toute seule par l'API, mais il faut **ajouter la nouvelle adresse** dans la console Google (étape 3).
+
+Ne collez jamais le secret dans une conversation ou une capture d'écran.
+
 ## Étape 8 (recommandée) : activer les e-mails automatiques
 
-Sans cette étape, le site fonctionne normalement, mais aucun e-mail n'est envoyé : ni bienvenue, ni information au recruteur quand l'admin valide ou refuse son compte, et « Mot de passe oublié » renvoie vers l'équipe au lieu d'envoyer un lien.
+Sans cette étape, le site fonctionne normalement, mais aucun e-mail n'est envoyé : ni bienvenue, ni information au recruteur quand l'admin valide ou refuse son compte (le message « votre identité a été vérifiée, votre compte est validé » part automatiquement dès que l'admin clique sur Valider), et « Mot de passe oublié » renvoie vers l'équipe au lieu d'envoyer un lien.
 
 1. Procurez-vous un accès SMTP : le service d'e-mails de votre hébergeur ou de votre domaine, ou un service d'envoi (Brevo, Mailjet, etc.). Il vous donne un **serveur**, un **port** (587 ou 465), un **identifiant** et un **mot de passe**. Utilisez une adresse d'expéditeur que ce service autorise (idéalement une adresse de votre domaine).
 2. Sur le serveur : `sudo bash /home/gamelia/gamelia/back/deploy/definir-smtp.sh`. Le script pose les questions, saisit le mot de passe en masqué, redémarre l'API et peut envoyer un e-mail d'essai.
 3. Vérifiez : (a) créez un compte avec une adresse que vous pouvez lire : l'e-mail de bienvenue doit arriver ; (b) sur la page de connexion, « Mot de passe oublié ? » : le formulaire d'envoi de lien doit apparaître, et le lien reçu doit permettre de choisir un nouveau mot de passe ; (c) en admin, validez un recruteur de test. Contrôlez la boîte de réception, puis les courriers indésirables.
-4. Si rien n'arrive : `sudo journalctl -u gamelia-api -n 50` (lignes `[mail]`). Les causes fréquentes : mot de passe ou port incorrect, adresse d'expéditeur non autorisée par le service.
+4. **Avec Brevo** : serveur `smtp-relay.brevo.com`, port `587`, identifiant = le champ « Connexion » de la page SMTP & API (de la forme `xxxxxxxx@smtp-brevo.com`), mot de passe = une **clé SMTP** (pas le mot de passe du compte). Authentifiez votre domaine dans Brevo (Expéditeurs, domaines : ajouter les entrées DKIM et le code Brevo dans la zone DNS, puis « Authentifier le domaine ») et utilisez comme expéditeur une adresse **de ce domaine** (`no-reply@votre-domaine`) : une adresse Gmail comme expéditeur est souvent refusée ou classée en indésirables. Mettez votre adresse de lecture dans « adresse de réponse ».
+5. Si rien n'arrive : `sudo journalctl -u gamelia-api -n 50` (lignes `[mail]`). Les causes fréquentes : mot de passe ou port incorrect, adresse d'expéditeur non autorisée par le service.
 
 Pour que les e-mails n'arrivent pas dans les courriers indésirables avec un vrai domaine, le service d'envoi demande en général d'ajouter des enregistrements DNS (SPF, DKIM) : suivez ses instructions.
+
+## Changer le nom de domaine du site
+
+À faire seulement quand le nouveau nom pointe déjà vers l'adresse IP du serveur (vérification : `nslookup nouveau.nom` affiche l'IP). Les comptes, questions et projets sont conservés ; les personnes connectées devront se reconnecter.
+
+1. Envoyer le nouveau zip sur le serveur, puis `cd /root && unzip -o <zip>`.
+2. `DOMAINE=nouveau.nom EMAIL_CONTACT=equipe@exemple.com ETAPES="code env dependances build services nginx https verification" bash /root/gamelia/back/deploy/installer-vps.sh`
+3. Si la connexion GitHub est activée, mettre à jour l'adresse de retour :
+   `sed -i 's#^GITHUB_CALLBACK_URL=.*#GITHUB_CALLBACK_URL=https://nouveau.nom/api/auth/github/callback#' /home/gamelia/gamelia/back/.env && systemctl restart gamelia-api`
+   (Google n'a rien à changer côté serveur : son adresse de retour suit le nom de domaine.)
+4. Sur github.com (application OAuth) : changer « Homepage URL » et ajouter `https://nouveau.nom/api/auth/github/callback` comme « Redirect URI ». Sur console.cloud.google.com (si Google est activé) : ajouter `https://nouveau.nom` en origine autorisée et `https://nouveau.nom/api/auth/google/callback` en URI de redirection.
+5. Mettre à jour le lien de démo (CADEV) et tout lien partagé : l'ancienne adresse ne répond plus.
+
+Retour en arrière : relancer la commande de l'étape 2 avec l'ancien nom.
 
 ## Les réglages, pour mémoire
 

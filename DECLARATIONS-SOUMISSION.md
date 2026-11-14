@@ -37,7 +37,7 @@ Aucun composant sous licence à réciprocité (GPL, AGPL, LGPL). Contrôle autom
 
 Logiciels du serveur (non modifiés, non distribués avec le projet) : Ubuntu, PostgreSQL (licence PostgreSQL), nginx (BSD-2-Clause), Node.js (MIT), certbot (Apache-2.0).
 
-Services extérieurs appelés par la solution : Agnes AI (assistante Agnès), API publique de GitHub (vérification de compte), YouTube et Vimeo (lecteurs vidéo intégrés), Let's Encrypt (certificat HTTPS), service d'envoi d'e-mails SMTP (à préciser une fois choisi).
+Services extérieurs appelés par la solution : Agnes AI (assistante Agnès), API publique de GitHub (vérification de compte) et connexion avec GitHub ou Google (OAuth, nom et adresse e-mail seulement), YouTube et Vimeo (lecteurs vidéo intégrés), Let's Encrypt (certificat HTTPS), service d'envoi d'e-mails SMTP (à préciser une fois choisi).
 
 ## 4. Usage de l'intelligence artificielle
 
