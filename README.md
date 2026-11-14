@@ -70,6 +70,30 @@ npm test
 
 `npm run typecheck` et `npm run lint` (dans `front/`) contrôlent le code du site ; les tests de parcours réels à travers nginx (`npm run test:integration`) demandent l'installation complète décrite dans `DEPLOIEMENT-VPS.md`.
 
+## Comment ça marche
+
+```
+Navigateur ──HTTPS──> nginx ──/api/*──> API Express (port 4000) ──> PostgreSQL
+                        └────── /* ───> Site Next.js (port 3000)
+```
+
+- **Un seul nom de domaine** : nginx envoie `/api/…` à l'API et tout le reste au site. Le navigateur ne parle donc qu'à un seul domaine, ce qui permet les cookies de session sans configuration particulière. Les deux programmes sont des services systemd (`gamelia-api`, `gamelia-front`), redémarrés automatiquement.
+- **Trois rôles** : **développeur** (pose des questions, apprend, relève des défis, publie des projets, gagne des points), **recruteur** (publie des défis, consulte les candidatures, cherche des talents ; son compte doit d'abord être **validé par un administrateur**, qui le prévient par e-mail), **administrateur** (valide les recruteurs, les défis et les solutions, traite les signalements ; créé uniquement avec `npm run create-admin`, jamais par le formulaire d'inscription).
+- **Connexion** : un cookie de session (httpOnly, durée de 30 jours) pointe vers une session stockée dans PostgreSQL ; un second cookie sert de protection CSRF (le site le renvoie dans l'en-tête `X-CSRF-Token` pour chaque action qui modifie des données). Connexion aussi possible avec GitHub.
+- **Points** : seuls les développeurs en gagnent (réponses, votes reçus, leçons, défis, etc.), avec un **plafond de 200 points par jour** et une protection contre l'auto-attribution. Le niveau (Débutant, Confirmé…) découle du total.
+- **Où trouver quoi** : `front/app/` (pages), `front/components/` (éléments d'interface), `front/lib/api/` (appels à l'API), `back/src/routes/` (une route par domaine), `back/src/services/` (points, e-mails, Agnès), `back/src/db/migrations/` (le schéma de la base, appliqué par `npm run migrate`).
+- **Mode démonstration du site** : `NEXT_PUBLIC_API_MOCK=true` remplace l'API par une simulation dans le navigateur (aucun serveur nécessaire). Il sert aux essais et aux tests, jamais au site en ligne. Toute nouvelle fonction doit donc exister dans les deux modes (`front/lib/mock/` et `back/src/routes/`).
+
+## Travailler à plusieurs
+
+1. **Une branche par sujet** à partir de `main` (`git checkout -b feature/mon-sujet`), jamais de travail direct sur `main` une fois le code gelé.
+2. **Avant de proposer un changement** : `npm test` dans `back/` ; `npm run typecheck`, `npm run lint` et `npm test` dans `front/`. Les tests de l'API tournent sur une vraie base, ils doivent tous passer.
+3. **Une demande de fusion** (pull request) relue par un autre membre, puis fusion dans `main`.
+4. **Jamais dans Git** : `.env`, clés, mots de passe, clé Agnès, clé SMTP. Seuls les fichiers `.env.example` sont versionnés. Ces secrets se saisissent sur le serveur avec les scripts de `back/deploy/`.
+5. **Un changement de base de données** passe par une **nouvelle migration** (fichier numéroté suivant dans `back/src/db/migrations/`), jamais en modifiant une migration déjà appliquée.
+6. **Mettre à jour le serveur** : envoyer la nouvelle version et relancer l'installateur (voir `DEPLOIEMENT-VPS.md`) ; il ne touche ni aux données ni aux secrets existants.
+7. **Journal de l'IA** : tout usage d'une IA qui a produit du code ou du texte est noté dans `front/JOURNAL-IA.md` (règlement, article 6).
+
 ## Agnès, l'assistante IA
 
 Agnès répond aux développeurs grâce à l'API **Agnes AI** (modèle gratuit `agnes-2.0-flash`) :
