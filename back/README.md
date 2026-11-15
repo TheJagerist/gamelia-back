@@ -119,16 +119,25 @@ Envoyés par SMTP (`src/services/mailer.js`, modèles français dans `src/servic
 | L'admin valide / refuse (`POST /admin/recruteurs/:id`) | le recruteur | Compte validé (lien de connexion) / non validé |
 | « Mot de passe oublié » | le membre | Lien de réinitialisation, valable 60 minutes, à usage unique |
 | Mot de passe changé | le membre | Confirmation, avec lien pour réagir si ce n'est pas lui |
+| Un développeur candidate à un défi (`POST /defis-recruteurs/:id/candidatures`) | le recruteur | Nouvelle candidature, lien vers le défi |
+| Un recruteur soumet un défi / s'inscrit | les administrateurs | Élément en attente de validation |
+| L'admin publie / refuse un défi (`POST /admin/defis/:id`) | le recruteur | Défi publié / non accepté |
+| Le recruteur évalue, retient ou refuse une candidature | le développeur | Candidature évaluée / retenue (avec le nom de l'entreprise) / non retenue |
+| Un recruteur contacte un développeur (`POST /recruteur/contacts`) | le développeur | Un recruteur souhaite vous contacter |
+| L'admin valide / refuse une solution à un défi de la plateforme | le développeur | Félicitations avec les points gagnés / solution à revoir |
+| Réponse à une question, meilleure réponse, commentaire ou revue de projet, demande de collaboration | le membre concerné | Nouvelle activité, lien vers la page |
+| Nouveau message privé | le destinataire | Un seul e-mail par série de messages non lus (le contenu n'est jamais recopié) |
 
 **Mot de passe oublié** : `POST /auth/mot-de-passe-oublie {email}` répond toujours `202 {sent:true}` (compte existant ou non : on ne révèle pas quelles adresses sont inscrites) ; `POST /auth/reinitialiser-mot-de-passe {token, password}` change le mot de passe (`204`) ou répond `400` avec le code `lien_invalide`. `GET /auth/mot-de-passe-oublie/etat` indique si la fonction est disponible (`{enabled}`) : sans SMTP, le front renvoie vers l'équipe.
 Le jeton (32 octets aléatoires) n'est jamais stocké en clair, seulement son empreinte SHA-256 (table `password_reset_tokens`). Un nouveau lien annule les précédents, 3 demandes maximum par compte et par heure, et un changement de mot de passe ferme toutes les sessions du compte.
 
+- **E-mails de suivi d'activité** (`src/services/notifier.js`) : une seule porte d'entrée pour prévenir un membre, qui crée la notification du site puis envoie l'e-mail. Le réglage **Paramètres > Notifications** du membre gouverne les deux (réponses, commentaires, candidatures et messages) ; les décisions de l'équipe sur ce que le membre a soumis (défi publié, solution validée, collaboration) sont toujours envoyées. Le texte d'un message privé, d'une réponse ou d'un retour de recruteur n'est jamais recopié dans un e-mail : il reste sur le site. Chaque e-mail renvoie vers la page concernée et rappelle où modifier les notifications.
 - **Non bloquant** : la réponse de l'API part sans attendre le serveur d'e-mails ; une panne SMTP est écrite dans les journaux et n'empêche jamais l'action.
 - **Pas de doublon** : l'e-mail d'une décision admin n'est envoyé que si le statut change réellement.
 - **Une nouvelle tentative** après une panne passagère (réseau, réponse 4xx) ; aucune pour un refus définitif (5xx).
 - **Sécurité** : valeurs des membres échappées dans le HTML, aucun texte de membre dans l'objet, adresses masquées dans les journaux, chiffrement obligatoire en production (sauf relais installé sur le serveur).
 - **Facultatif** : sans `SMTP_HOST` et `MAIL_FROM`, rien n'est envoyé. Configuration sur le VPS : `deploy/definir-smtp.sh`.
-- Tests : `tests/mail.test.js` et `tests/password-reset.test.js`, avec un faux serveur SMTP local (aucun vrai e-mail envoyé).
+- Tests : `tests/mail.test.js`, `tests/password-reset.test.js` et `tests/activity-mail.test.js`, avec un faux serveur SMTP local (aucun vrai e-mail envoyé).
 
 ## Agnès, l'assistante IA
 

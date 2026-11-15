@@ -12,6 +12,8 @@ const { requireRole } = require('../middleware/auth');
 const points = require('../services/points');
 const { userCols, toPublicUser } = require('../utils/publicUser');
 const { mapProjectSummary, PROJECT_SUMMARY_SELECT } = require('../services/summaries');
+const { notifyUser } = require('../services/notifier');
+const mails = require('../services/mail-templates');
 
 const router = express.Router();
 const PAGE_SIZE = 6;
@@ -28,14 +30,7 @@ function isAllowedVideo(url) {
   }
 }
 
-async function notify(userId, kind, text, href) {
-  const column = { reponse: 'notify_reponses', commentaire: 'notify_commentaires', badge: 'notify_badges', candidature: 'notify_candidatures' }[kind];
-  if (column) {
-    const { rows } = await query(`SELECT ${column} AS enabled FROM user_settings WHERE user_id = $1`, [userId]);
-    if (rows.length && rows[0].enabled === false) return;
-  }
-  await query('INSERT INTO notifications (user_id, kind, text, href) VALUES ($1, $2, $3, $4)', [userId, kind, text, href]);
-}
+const notify = notifyUser; // notification dans le site + e-mail éventuel (services/notifier.js)
 
 async function techsFor(projectId) {
   const { rows } = await query('SELECT tech FROM project_techs WHERE project_id = $1', [projectId]);
@@ -229,7 +224,9 @@ router.post(
     const body = data.body.slice(0, 500);
     await query('INSERT INTO project_comments (project_id, author_id, body) VALUES ($1, $2, $3)', [project.id, req.user.id, body]);
     if (project.owner_id !== req.user.id) {
-      await notify(project.owner_id, 'commentaire', `${req.user.name} a commenté votre projet « ${project.title} ».`, `/projets/${project.id}`);
+      await notify(project.owner_id, 'commentaire', `${req.user.name} a commenté votre projet « ${project.title} ».`, `/projets/${project.id}`, ({ name }) =>
+        mails.commentReceived({ name, from: req.user.name, what: `a commenté votre projet « ${project.title} ».`, path: `/projets/${project.id}` })
+      );
     }
     res.status(204).end();
   })
@@ -257,7 +254,9 @@ router.post(
       if (err.code === '23505') throw ApiError.conflict('Vous avez déjà évalué ce projet.');
       throw err;
     }
-    await notify(project.owner_id, 'commentaire', `${req.user.name} a évalué votre projet « ${project.title} ».`, `/projets/${project.id}`);
+    await notify(project.owner_id, 'commentaire', `${req.user.name} a évalué votre projet « ${project.title} ».`, `/projets/${project.id}`, ({ name }) =>
+      mails.commentReceived({ name, from: req.user.name, what: `a évalué votre projet « ${project.title} ».`, path: `/projets/${project.id}` })
+    );
     res.status(204).end();
   })
 );
@@ -310,7 +309,9 @@ router.post(
       if (err.code === '23505') throw ApiError.conflict('Vous avez déjà une demande en attente sur ce projet.');
       throw err;
     }
-    await notify(project.owner_id, 'collaboration', `${req.user.name} propose de rejoindre « ${project.title} » comme ${data.role}.`, `/projets/${project.id}`);
+    await notify(project.owner_id, 'collaboration', `${req.user.name} propose de rejoindre « ${project.title} » comme ${data.role}.`, `/projets/${project.id}`, ({ name }) =>
+      mails.collaboration({ name, text: `${req.user.name} propose de rejoindre votre projet « ${project.title} » comme ${data.role}. Répondez-lui depuis la page du projet.`, path: `/projets/${project.id}` })
+    );
     res.status(204).end();
   })
 );
@@ -334,7 +335,9 @@ router.post(
 
     const newStatus = data.accept ? 'acceptee' : 'refusee';
     await query('UPDATE collab_requests SET status = $1 WHERE id = $2', [newStatus, collab.id]);
-    await notify(collab.from_id, 'collaboration', `${req.user.name} a ${data.accept ? 'accepté' : 'refusé'} votre demande sur « ${project.title} ».`, `/projets/${project.id}`);
+    await notify(collab.from_id, 'collaboration', `${req.user.name} a ${data.accept ? 'accepté' : 'refusé'} votre demande sur « ${project.title} ».`, `/projets/${project.id}`, ({ name }) =>
+      mails.collaboration({ name, text: `${req.user.name} a ${data.accept ? 'accepté' : 'refusé'} votre demande de collaboration sur « ${project.title} ».`, path: `/projets/${project.id}` })
+    );
     res.status(204).end();
   })
 );

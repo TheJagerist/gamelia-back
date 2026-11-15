@@ -13,6 +13,7 @@ const crypto = require('crypto');
 const env = require('../config/env');
 const mailTemplates = require('../services/mail-templates');
 const { sendMailInBackground } = require('../services/mailer');
+const { notifyAdmins } = require('../services/notifier');
 
 const router = express.Router();
 
@@ -68,10 +69,11 @@ router.post(
 
     if (data.role === 'recruteur') {
       // Compte en attente : pas de session ouverte, on notifie les admins.
-      await notifyAllAdmins(
+      await notifyAdmins(
         'validation',
         `${user.name} (${user.company}) a demandé un compte recruteur.`,
-        '/admin/validations'
+        '/admin/validations',
+        ({ name }) => mailTemplates.adminToValidate({ name, text: `${user.name} (${user.company}) a demandé un compte recruteur. Il attend votre validation.`, path: '/admin/validations' })
       );
       sendMailInBackground({ to: user.email, ...mailTemplates.welcomeRecruiterPending(user) });
       return res.status(201).json({ pending: true });
@@ -83,14 +85,6 @@ router.post(
     res.status(201).json(await loadMe(user.id));
   })
 );
-
-async function notifyAllAdmins(kind, text, href) {
-  await query(
-    `INSERT INTO notifications (user_id, kind, text, href)
-     SELECT id, $1, $2, $3 FROM users WHERE role = 'admin'`,
-    [kind, text, href]
-  );
-}
 
 // --- POST /auth/connexion ----------------------------------------------------
 const connexionSchema = z.object({

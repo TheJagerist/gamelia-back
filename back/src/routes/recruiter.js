@@ -12,18 +12,13 @@ const validate = require('../utils/validate');
 const { requireRole } = require('../middleware/auth');
 const { userCols, toPublicUser } = require('../utils/publicUser');
 const { startConversation, assertCanWrite, withTransaction } = require('./messages');
+const { notifyUser, notifyAdmins } = require('../services/notifier');
+const mails = require('../services/mail-templates');
 
 const router = express.Router();
 const PAGE_SIZE = 8;
 
-async function notify(userId, kind, text, href) {
-  const column = { reponse: 'notify_reponses', commentaire: 'notify_commentaires', badge: 'notify_badges', candidature: 'notify_candidatures' }[kind];
-  if (column) {
-    const { rows } = await query(`SELECT ${column} AS enabled FROM user_settings WHERE user_id = $1`, [userId]);
-    if (rows.length && rows[0].enabled === false) return;
-  }
-  await query('INSERT INTO notifications (user_id, kind, text, href) VALUES ($1, $2, $3, $4)', [userId, kind, text, href]);
-}
+const notify = notifyUser; // notification dans le site + e-mail éventuel (services/notifier.js)
 
 /** Le recruteur connecté, au format PublicUser (champ `recruiter` de RecruiterChallenge). */
 async function selfPublic(userId) {
@@ -203,10 +198,8 @@ router.post(
       await query('INSERT INTO recruiter_challenge_skills (challenge_id, skill) VALUES ($1, $2)', [challengeId, skill]);
     }
 
-    await query(
-      `INSERT INTO notifications (user_id, kind, text, href)
-       SELECT id, 'validation', $1, '/admin/validations' FROM users WHERE role = 'admin'`,
-      [`Nouveau défi recruteur à valider : ${data.title}.`]
+    await notifyAdmins('validation', `Nouveau défi recruteur à valider : ${data.title}.`, '/admin/validations', ({ name }) =>
+      mails.adminToValidate({ name, text: `Un recruteur (${req.user.company || req.user.name}) a soumis un nouveau défi à valider : ${data.title}.`, path: '/admin/validations' })
     );
 
     res.status(201).json({ id: challengeId });
@@ -234,7 +227,9 @@ router.post(
 
     const newStatus = app.status === 'recue' ? 'evaluee' : app.status;
     await query('UPDATE applications SET score = $1, feedback = $2, status = $3 WHERE id = $4', [data.score, data.feedback, newStatus, app.id]);
-    await notify(app.dev_id, 'candidature', `Votre candidature sur « ${app.challenge_title} » a été évaluée.`, `/opportunites/${req.params.id}`);
+    await notify(app.dev_id, 'candidature', `Votre candidature sur « ${app.challenge_title} » a été évaluée.`, `/opportunites/${req.params.id}`, ({ name }) =>
+      mails.applicationEvaluated({ name, challengeTitle: app.challenge_title, path: `/opportunites/${req.params.id}` })
+    );
     res.status(204).end();
   })
 );
@@ -271,7 +266,11 @@ router.post(
       data.retained
         ? `${req.user.company} vous propose une collaboration après « ${app.challenge_title} ».`
         : `Votre candidature sur « ${app.challenge_title} » n'a pas été retenue.`,
-      `/opportunites/${req.params.id}`
+      `/opportunites/${req.params.id}`,
+      ({ name }) =>
+        data.retained
+          ? mails.applicationRetained({ name, company: req.user.company || req.user.name, challengeTitle: app.challenge_title, path: `/opportunites/${req.params.id}` })
+          : mails.applicationNotRetained({ name, challengeTitle: app.challenge_title, path: `/opportunites/${req.params.id}` })
     );
     res.status(204).end();
   })
@@ -368,7 +367,9 @@ router.post(
       return startConversation(client, req.user.id, target.id, data.message);
     });
     const preview = data.message.length > 80 ? `${data.message.slice(0, 80)}…` : data.message;
-    await notify(target.id, 'candidature', `${req.user.name} (${req.user.company}) souhaite vous contacter : « ${preview} »`, `/messages?c=${conversationId}`);
+    await notify(target.id, 'candidature', `${req.user.name} (${req.user.company}) souhaite vous contacter : « ${preview} »`, `/messages?c=${conversationId}`, ({ name }) =>
+      mails.recruiterContact({ name, from: req.user.name, company: req.user.company || req.user.name, path: `/messages?c=${conversationId}` })
+    );
     res.status(204).end();
   })
 );

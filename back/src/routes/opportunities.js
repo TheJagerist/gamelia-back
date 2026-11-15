@@ -8,6 +8,8 @@ const asyncHandler = require('../utils/asyncHandler');
 const validate = require('../utils/validate');
 const { requireRole } = require('../middleware/auth');
 const { userCols, toPublicUser } = require('../utils/publicUser');
+const { notifyUser } = require('../services/notifier');
+const mails = require('../services/mail-templates');
 
 const router = express.Router();
 const PAGE_SIZE = 6;
@@ -181,16 +183,13 @@ router.post(
       throw err;
     }
 
-    const column = 'notify_candidatures';
-    const settingsRes = await query(`SELECT ${column} AS enabled FROM user_settings WHERE user_id = $1`, [challenge.recruiter_id]);
-    if (!settingsRes.rows.length || settingsRes.rows[0].enabled !== false) {
-      await query('INSERT INTO notifications (user_id, kind, text, href) VALUES ($1, $2, $3, $4)', [
-        challenge.recruiter_id,
-        'candidature',
-        `Nouvelle candidature de ${req.user.name} sur « ${challenge.title} ».`,
-        `/recruteur/defis/${challenge.id}`,
-      ]);
-    }
+    await notifyUser(
+      challenge.recruiter_id,
+      'candidature',
+      `Nouvelle candidature de ${req.user.name} sur « ${challenge.title} ».`,
+      `/recruteur/defis/${challenge.id}`,
+      ({ name }) => mails.newApplication({ name, devName: req.user.name, challengeTitle: challenge.title, path: `/recruteur/defis/${challenge.id}` })
+    );
 
     res.status(204).end();
   })

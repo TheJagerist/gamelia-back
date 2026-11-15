@@ -11,20 +11,13 @@ const { requireUser, requireRole } = require('../middleware/auth');
 const points = require('../services/points');
 const { userCols, toPublicUser } = require('../utils/publicUser');
 const { mapQuestionSummary } = require('../services/summaries');
+const { notifyUser } = require('../services/notifier');
+const mails = require('../services/mail-templates');
 
 const router = express.Router();
 const PAGE_SIZE = 6;
 
-async function notify(userId, kind, text, href) {
-  // Respecte le paramètre de notification de l'utilisateur, comme le mock
-  // (notify() y vérifie settings.notify.<kind> avant d'insérer).
-  const column = { reponse: 'notify_reponses', commentaire: 'notify_commentaires', badge: 'notify_badges', candidature: 'notify_candidatures' }[kind];
-  if (column) {
-    const { rows } = await query(`SELECT ${column} AS enabled FROM user_settings WHERE user_id = $1`, [userId]);
-    if (rows.length && rows[0].enabled === false) return;
-  }
-  await query('INSERT INTO notifications (user_id, kind, text, href) VALUES ($1, $2, $3, $4)', [userId, kind, text, href]);
-}
+const notify = notifyUser; // notification dans le site + e-mail éventuel (services/notifier.js)
 
 // --- GET /questions -----------------------------------------------------------
 const listQuerySchema = z.object({
@@ -242,7 +235,9 @@ router.post(
     if (question.author_id !== req.user.id) {
       const result = await points.award(req.user.id, `Réponse à « ${question.title} »`, 10);
       awarded = result.awarded;
-      await notify(question.author_id, 'reponse', `${req.user.name} a répondu à « ${question.title} »`, `/questions/${question.id}`);
+      await notify(question.author_id, 'reponse', `${req.user.name} a répondu à « ${question.title} »`, `/questions/${question.id}`, ({ name }) =>
+        mails.answerReceived({ name, from: req.user.name, questionTitle: question.title, path: `/questions/${question.id}` })
+      );
     }
     await points.giveBadge(req.user.id, 'b1');
 
@@ -271,7 +266,9 @@ commentsRouter.post(
     const body = data.body.slice(0, 500); // tronqué comme le mock
     await query('INSERT INTO answer_comments (answer_id, author_id, body) VALUES ($1, $2, $3)', [answer.id, req.user.id, body]);
     if (answer.author_id !== req.user.id) {
-      await notify(answer.author_id, 'commentaire', `${req.user.name} a commenté votre réponse.`, `/questions/${answer.question_id}`);
+      await notify(answer.author_id, 'commentaire', `${req.user.name} a commenté votre réponse.`, `/questions/${answer.question_id}`, ({ name }) =>
+        mails.commentReceived({ name, from: req.user.name, what: 'a commenté votre réponse.', path: `/questions/${answer.question_id}` })
+      );
     }
     res.status(204).end();
   })
@@ -370,7 +367,9 @@ router.post(
     if (answer.author_id !== req.user.id) {
       await points.award(answer.author_id, `Meilleure réponse sur « ${question.title} »`, 25);
       await points.giveBadge(answer.author_id, 'b2');
-      await notify(answer.author_id, 'reponse', `Votre réponse a été choisie comme meilleure réponse sur « ${question.title} ».`, `/questions/${question.id}`);
+      await notify(answer.author_id, 'reponse', `Votre réponse a été choisie comme meilleure réponse sur « ${question.title} ».`, `/questions/${question.id}`, ({ name }) =>
+        mails.bestAnswer({ name, questionTitle: question.title, path: `/questions/${question.id}` })
+      );
     }
 
     res.status(204).end();

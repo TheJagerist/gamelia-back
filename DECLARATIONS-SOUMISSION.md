@@ -1,66 +1,83 @@
-# Déclarations à faire lors de la soumission (brouillon)
+# Gamelia
 
-Règlement du Concours CADEV 2026, article 6. Ce document est un **brouillon préparé pendant la révision finale** : chaque membre de l'équipe doit le relire, le corriger si besoin et n'envoyer que ce qui est exact. Les déclarations engagent les membres, pas l'outil qui a aidé à les rédiger.
+**La plateforme africaine d'échange, par et pour les développeurs.** Poser une question, apprendre en pratiquant, prouver ses compétences par des défis et des projets réels, être repéré par des recruteurs.
 
-## 1. Produit Datacloud utilisé
+Projet présenté au **Concours CADEV 2026 by Systalink**.
 
-- Serveur cloud (VPS) Datacloud, Ubuntu. *À compléter : référence de la commande, région, date d'achat.*
-- *Le cas échéant : nom de domaine acheté sur Datacloud.*
-- Adresse du projet déployé : `https://…` *(à compléter)*
+- **Site en ligne** : https://gamelia.ge-tech.site
+- **Hébergement** : serveur cloud Systalink / Datacloud (`vps-systalink`, Ubuntu 22.04), site et base de données sur le même serveur
+- **Compte de démonstration pour le jury** : Compte Developpeur `gameliagroupe+jury@gmail.com` MOT DE PASSE GAMELIA202600
+  Compte recruteur `gameliagroupe+recruteur@gmail.com` MOT DE PASSE GAMELIA202600
+  Compte Admin `'gamelia+admin@gmail.com'`\* MOT DE PASSE GAMELIA202600
 
-## 2. Originalité et titularité
+## Ce que fait Gamelia
 
-À déclarer par **chaque membre**, personnellement :
+| Pour qui         | Ce qu'on peut faire                                                                                                                                                                                                                                                                                                                                                     |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Les développeurs | Poser et répondre à des questions, voter, gagner des points et des badges ; suivre des pistes d'apprentissage (Web, API, Git) avec un éditeur « Essayer » ; relever des défis ; publier des projets ; Ajoute des demos de leurs differents projets ; construire un portfolio où chaque preuve est marquée « vérifiée » ou « déclarée » ; échanger par messagerie privée |
+| Les recruteurs   | S'inscrire et être validés par l'équipe, publier des défis, repérer des talents, les contacter, évaluer des candidatures                                                                                                                                                                                                                                                |
+| L'équipe (admin) | Valider les recruteurs, les défis et les solutions, traiter les signalements                                                                                                                                                                                                                                                                                            |
+| Tout le monde    | **Agnès**, l'assistante IA : une première piste sur chaque question et une discussion privée                                                                                                                                                                                                                                                                            |
 
-- le projet a été réalisé pour l'essentiel par l'équipe pendant la durée du Concours ; il n'existait pas avant ;
-- il a été créé en dehors de toute mission confiée par un employeur, un client ou un établissement d'enseignement susceptible d'en revendiquer les droits. *Si le projet a un lien avec un cours, un stage ou un travail noté, il faut l'autorisation écrite de l'établissement ou de l'employeur : à vérifier par chaque membre avant de déclarer.*
-- éléments de code antérieurs au Concours appartenant à un membre : *aucun / à lister*.
+### Ce qui distingue Gamelia
 
-## 3. Composants tiers et licences
+- **Une preuve, pas une déclaration.** Un badge « vérifié » signifie un fait constaté : défi réussi, piste terminée, projet relu, compte GitHub confirmé.
+- **Agnès, l'assistante IA** (API Agnes AI). Sa réponse est signalée « IA », ne rapporte aucun point, et ne remplace pas la communauté.
+- **Pensé pour les connexions lentes** : pages légères (116 Ko de JavaScript au plus par page), états de chargement et d'erreur sur chaque écran, interface utilisable sur téléphone.
+- **Apprendre en pratiquant** : l'éditeur « Essayer » exécute le code HTML, CSS et JavaScript de l'apprenant dans un cadre isolé du navigateur. Rien n'est envoyé au serveur.
+- **Connexion avec Google ou GitHub** en plus de l'e-mail, avec les seuls droits de base (nom et adresse e-mail).
 
-Aucun composant sous licence à réciprocité (GPL, AGPL, LGPL). Contrôle automatique : `npm run licences` dans `front/` et dans `back/` (échoue si une telle licence apparaît). Listes complètes, dépendances indirectes comprises : `front/LICENCES.md` et `back/docs/LICENCES.md`.
+## Technique
 
-| Composant | Licence | Rôle |
-|---|---|---|
-| Next.js 14, React 18 | MIT | site web |
-| Tailwind CSS (outil de build) | MIT | mise en forme |
-| lucide-react | ISC | icônes |
-| prism-react-renderer | MIT | coloration du code |
-| Bricolage Grotesque (police) | SIL OFL 1.1 | typographie |
-| Express 4, cors, helmet, cookie-parser, express-rate-limit | MIT | API |
-| pg (client PostgreSQL) | MIT | accès à la base |
-| zod | MIT | validation des entrées |
-| bcryptjs | MIT | chiffrement des mots de passe |
-| dotenv | BSD-2-Clause | configuration |
-| uuid | MIT | identifiants |
-| nodemailer | MIT-0 (MIT sans obligation de citer l'auteur) | envoi des e-mails automatiques |
+| Couche          | Choix                                                                                      |
+| --------------- | ------------------------------------------------------------------------------------------ |
+| Site            | Next.js 14, TypeScript, Tailwind CSS                                                       |
+| API             | Node.js 22, Express, validation avec zod                                                   |
+| Base de données | PostgreSQL (migrations versionnées)                                                        |
+| Serveur         | nginx (HTTPS Let's Encrypt), services systemd, pare-feu, sauvegarde quotidienne de la base |
+| IA              | API Agnes AI, appelée par le serveur (la clé n'est jamais dans le navigateur)              |
+| E-mails         | Brevo (SMTP) : bienvenue, validation ou refus d'un compte recruteur, mot de passe oublié, et suivi d'activité hors du site (candidatures, retours des recruteurs, défis relevés, réponses, messages)   |
 
-Logiciels du serveur (non modifiés, non distribués avec le projet) : Ubuntu, PostgreSQL (licence PostgreSQL), nginx (BSD-2-Clause), Node.js (MIT), certbot (Apache-2.0).
+Tout est détaillé dans `front/README.md`, `back/README.md` et `DEPLOIEMENT-VPS.md` (installation complète du serveur en une commande).
 
-Services extérieurs appelés par la solution : Agnes AI (assistante Agnès), API publique de GitHub (vérification de compte) et connexion avec GitHub ou Google (OAuth, nom et adresse e-mail seulement), YouTube et Vimeo (lecteurs vidéo intégrés), Let's Encrypt (certificat HTTPS), service d'envoi d'e-mails SMTP (à préciser une fois choisi).
+## Sécurité
 
-## 4. Usage de l'intelligence artificielle
+- Mots de passe chiffrés (bcrypt), sessions par cookie `httpOnly` et `Secure`, protection CSRF.
+- Limites de débit sur la connexion, entrées validées partout, liens externes limités à `https`.
+- Connexion avec GitHub ou Google : jamais de liaison automatique à un compte existant sur la seule base de l'adresse e-mail.
+- La base de données n'est pas accessible depuis Internet. L'API n'écoute que derrière nginx.
+- Aucun secret dans le code : clés dans un fichier `.env` sur le serveur.
 
-Journal détaillé : `front/JOURNAL-IA.md`. Résumé :
+## Qualité vérifiée
 
-| Outil | Parties du projet concernées |
-|---|---|
-| Claude (Anthropic) | code initial du front à partir du cahier des charges ; assemblage front + back ; routes de messagerie et d'Agnès ; révision finale (sécurité, validation, pages légales, vérification GitHub, scripts de déploiement, tests, documentation) |
-| *Autres outils utilisés par les membres* | *à compléter (par exemple pour le back, le design, les textes)* |
-| Agnes AI | ce n'est pas un outil de développement : c'est le service qui fait fonctionner l'assistante Agnès dans le site |
+| Contrôle                                                                 | Résultat                 |
+| ------------------------------------------------------------------------ | ------------------------ |
+| Tests de l'API sur une vraie base PostgreSQL                             | tous réussis             |
+| Parcours navigateur (téléphone et ordinateur)                            | tous réussis             |
+| Parcours réels (site + API + base + connexion GitHub et Google simulées) | tous réussis             |
+| Licences (`npm run licences`)                                            | aucune GPL, AGPL ni LGPL |
+| Vulnérabilités de l'API (`npm audit`)                                    | 0                        |
 
-Avant de déclarer :
+## Licences et usage de l'IA
 
-- compléter la colonne « Relu et compris par » de `front/JOURNAL-IA.md` : seuls les membres peuvent l'attester ;
-- vérifier que l'usage de chaque outil respecte ses conditions d'utilisation, y compris la clé Agnes AI (offre gratuite : usage autorisé pour un site public ?) ;
-- le jury note la **maîtrise** de la solution, y compris des parties produites avec l'IA (annexe 1, 30 % de la note) : chaque membre doit pouvoir expliquer les points de la section suivante.
+- **Composants tiers** : licences MIT, ISC, BSD, Apache 2.0, SIL OFL. Liste complète dans `front/LICENCES.md` et `back/docs/LICENCES.md`.
+- **Intelligence artificielle** : usage déclaré dans `front/JOURNAL-IA.md` (outils, parties concernées). Claude (Anthropic) a vérifier le code, il a aussi ecris les defis servant a faire les demos mais aussi pour la resolution des defis.
 
-## 5. Ce que chaque membre doit savoir expliquer au jury
+### **Déclaration d'utilisation de l'IA**
 
-1. **Les deux modes du front** (site réel par défaut, démonstration avec `NEXT_PUBLIC_API_MOCK=true`) et pourquoi le site en ligne ne contient aucune donnée simulée.
-2. **La connexion** : mot de passe chiffré avec bcrypt, session dans un cookie `httpOnly`, jeton CSRF renvoyé dans un en-tête, limite de 10 tentatives par minute.
-3. **Vérifié ou déclaré** : ce que Gamelia vérifie réellement (défi réussi, piste terminée, projet relu, compte GitHub confirmé par un code placé dans la bio) et ce qui reste déclaratif.
-4. **Les points** : barème, plafond de 200 points par jour, aucun point sur son propre contenu.
-5. **Agnès** : la clé reste sur le serveur, quota par membre, une seule piste par question, que se passe-t-il si le service est indisponible.
-6. **Le déploiement** : nginx devant le site et l'API sur un seul domaine, PostgreSQL non exposé, services systemd, HTTPS, sauvegarde.
-7. **Les limites connues** (`back/docs/LIMITES.md`) : pas d'e-mail, pas de temps réel dans la messagerie, version de Next.js.
+L'IA a été utilisée comme outil d'accompagnement pour orienter l'équipe dans la mise en place du Back-End, comprendre la structure du framework (dossiers `lib`, `components`, `tests`) et faciliter l'intégration de certaines fonctionnalités, notamment la messagerie. Elle a également servi d'assistance technique et de vérification. Toutefois, la conception, le développement, l'intégration et les tests ont été réalisés par les membres de l'équipe.l'équipe a relu, testé et peut expliquer chaque partie. L'assistante Agnès utilise l'API Agnes AI.
+
+## Limites connues
+
+Elles sont assumées et détaillées dans `back/docs/LIMITES.md` : messagerie sans temps réel (rafraîchissement automatique), pas d'envoi de fichiers, Next.js en version 14 (avis de sécurité connus, risques réduits), un compte Google ou GitHub n'est jamais relié automatiquement à un compte existant.
+
+## L'équipe
+
+| Membre | Rôle |
+| ------ | ---- |
+
+Sopi MEKOLLE Contenu, tests et présentation.
+MOKELE Emmanuel Conception Back-End.
+Maney LAMBA
+GARNIER Leonce Développement Front-End.
+ALILA Gaby Design UI/UX sur Figma, ergonomie et animations.

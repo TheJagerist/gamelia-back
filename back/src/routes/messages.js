@@ -11,6 +11,8 @@ const asyncHandler = require('../utils/asyncHandler');
 const validate = require('../utils/validate');
 const { requireRole } = require('../middleware/auth');
 const { userCols, toPublicUser } = require('../utils/publicUser');
+const { mailNewMessage } = require('../services/notifier');
+const mails = require('../services/mail-templates');
 
 const router = express.Router();
 const MAX_LEN = 1000;
@@ -197,6 +199,7 @@ router.post(
       await assertNotTooFast(client, req.user.id);
       return startConversation(client, req.user.id, other.id, data.body);
     });
+    mailNewMessage(id, req.user.id, other.id, ({ name }) => mails.newPrivateMessage({ name, from: req.user.name, path: `/messages?c=${id}` }));
     res.status(201).json({ id });
   })
 );
@@ -219,6 +222,7 @@ router.post(
       await assertNotTooFast(client, req.user.id);
       return pushMessage(client, id, req.user.id, data.body);
     });
+    mailNewMessage(id, req.user.id, otherId, ({ name }) => mails.newPrivateMessage({ name, from: req.user.name, path: `/messages?c=${id}` }));
     res.status(201).json(toMessage(m, req.user.id));
   })
 );

@@ -107,7 +107,7 @@ Pour l'activer, mettre la clé dans `back/.env` : `AGNES_API_KEY=…`. Elle rest
 
 | Partie | Contrôle | Résultat |
 |---|---|---|
-| back | `npm test` (vraie base PostgreSQL) | 143 tests réussis (dont 27 pour les e-mails automatiques et le mot de passe oublié, ajoutés le 14 novembre) |
+| back | `npm test` (vraie base PostgreSQL) | 180 tests réussis (dont 40 pour les e-mails automatiques, le mot de passe oublié et les e-mails de suivi) |
 | back | `npm audit` | 0 vulnérabilité |
 | front | `npm run typecheck`, `npm run lint` | 0 erreur, 0 avertissement |
 | front | `npm run build` | 116 Ko de JavaScript au maximum par page (objectif < 150 Ko) |
@@ -121,6 +121,12 @@ Le détail, les limites et ce qui reste à faire par l'équipe sont dans [`RAPPO
 ## E-mails automatiques (14 novembre 2026)
 
 E-mails de bienvenue à l'inscription, e-mail quand l'admin valide ou refuse un compte recruteur, et « mot de passe oublié » par lien à usage unique (deux nouvelles pages du front : `/mot-de-passe-oublie` et `/reinitialiser-mot-de-passe`). Facultatif (sans SMTP, rien n'est envoyé), jamais bloquant, sans doublon. Configuration sur le VPS : `sudo bash back/deploy/definir-smtp.sh` (étape 8 de [`DEPLOIEMENT-VPS.md`](DEPLOIEMENT-VPS.md)). Détails : `back/README.md`.
+
+**E-mails de suivi (15 novembre 2026)** : pour prévenir un membre qui n'est pas sur le site, Gamelia envoie aussi un e-mail quand un développeur candidate à un défi (au recruteur), quand le recruteur évalue, retient ou refuse (au développeur), quand un recruteur le contacte, quand une solution à un défi de la plateforme est validée (félicitations avec les points) ou doit être revue, quand quelqu'un répond à sa question ou commente son projet, et pour un nouveau message privé (un seul e-mail par série de messages non lus). Les administrateurs sont prévenus d'un nouveau recruteur ou défi à valider. Le réglage **Paramètres > Notifications** s'applique aux e-mails comme aux notifications du site ; le contenu des messages privés n'est jamais recopié dans un e-mail.
+
+## Connexion avec Google (15 novembre 2026)
+
+En plus de GitHub, un développeur peut créer son compte ou se connecter avec Google (bouton sur les pages de connexion et d'inscription, liaison dans Paramètres). Facultatif : sans `GOOGLE_CLIENT_ID` et `GOOGLE_CLIENT_SECRET`, le bouton n'apparaît pas. Configuration sur le VPS : `sudo bash back/deploy/definir-google-oauth.sh` ; adresse de retour à déclarer chez Google : `https://gamelia.ge-tech.site/api/auth/google/callback`. Après une mise à jour du code, lancer `npm run migrate` (migration 006). Détails et limites : `back/docs/LIMITES.md`.
 
 ## Historique : version du 2 novembre 2026
 

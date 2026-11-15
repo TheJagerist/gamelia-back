@@ -12,6 +12,7 @@ const { requireRole } = require('../middleware/auth');
 const points = require('../services/points');
 const mailTemplates = require('../services/mail-templates');
 const { sendMailInBackground } = require('../services/mailer');
+const { notifyUser } = require('../services/notifier');
 const { userCols, toPublicUser, loadMe } = require('../utils/publicUser');
 
 const router = express.Router();
@@ -84,16 +85,17 @@ router.post(
 
     // Pas de colonne notify_validation dans user_settings (le kind 'validation' n'a
     // pas d'opt-out dédié côté mock) : on notifie toujours, comme le fait admin.decideSubmission().
-    await query(
-      `INSERT INTO notifications (user_id, kind, text, href)
-       VALUES ($1, 'validation', $2, $3)`,
-      [
-        submission.dev_id,
+    await notifyUser(
+      submission.dev_id,
+      'validation',
+      data.approve
+        ? `Votre solution au défi « ${submission.challenge_title} » est validée.`
+        : `Votre solution au défi « ${submission.challenge_title} » doit être revue.`,
+      `/defis/${submission.challenge_id}`,
+      ({ name }) =>
         data.approve
-          ? `Votre solution au défi « ${submission.challenge_title} » est validée.`
-          : `Votre solution au défi « ${submission.challenge_title} » doit être revue.`,
-        `/defis/${submission.challenge_id}`,
-      ]
+          ? mailTemplates.challengeValidated({ name, challengeTitle: submission.challenge_title, points: submission.challenge_points, path: `/defis/${submission.challenge_id}` })
+          : mailTemplates.challengeToReview({ name, challengeTitle: submission.challenge_title, path: `/defis/${submission.challenge_id}` })
     );
 
     res.status(204).end();
@@ -183,12 +185,16 @@ router.post(
 
     const newStatus = data.approve ? 'publie' : 'refuse';
     await query('UPDATE recruiter_challenges SET status = $1 WHERE id = $2', [newStatus, challenge.id]);
-    await query('INSERT INTO notifications (user_id, kind, text, href) VALUES ($1, $2, $3, $4)', [
+    await notifyUser(
       challenge.recruiter_id,
       'validation',
       data.approve ? `Votre défi « ${challenge.title} » est publié.` : `Votre défi « ${challenge.title} » n'a pas été accepté.`,
       '/recruteur/defis',
-    ]);
+      ({ name }) =>
+        data.approve
+          ? mailTemplates.challengePublished({ name, challengeTitle: challenge.title, path: '/recruteur/defis' })
+          : mailTemplates.challengeRefused({ name, challengeTitle: challenge.title, path: '/recruteur/defis' })
+    );
     res.status(204).end();
   })
 );

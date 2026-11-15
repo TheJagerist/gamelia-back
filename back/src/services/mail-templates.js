@@ -12,14 +12,14 @@ const esc = (v) =>
 
 const siteUrl = () => env.frontOrigin.replace(/\/+$/, '');
 
-function layout(title, bodyHtml) {
+function layout(title, bodyHtml, footer = 'Vous recevez ce message parce que vous avez créé un compte sur Gamelia.') {
   return `<!doctype html>
 <html lang="fr"><body style="margin:0;padding:24px;background:#f5f5f4;font-family:Arial,Helvetica,sans-serif;color:#1c1917">
 <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:12px;padding:28px">
 <p style="margin:0 0 16px;font-size:20px;font-weight:bold">Gamelia</p>
 <h1 style="margin:0 0 16px;font-size:18px">${esc(title)}</h1>
 ${bodyHtml}
-<p style="margin:24px 0 0;font-size:12px;color:#78716c">Vous recevez ce message parce que vous avez créé un compte sur Gamelia.</p>
+<p style="margin:24px 0 0;font-size:12px;color:#78716c">${footer}</p>
 </div></body></html>`;
 }
 
@@ -158,4 +158,201 @@ function passwordChanged({ name }) {
   return { subject, text, html };
 }
 
-module.exports = { recruiterApproved, recruiterRefused, welcomeDeveloper, welcomeRecruiterPending, passwordReset, passwordChanged, esc };
+
+// --- E-mails de suivi d'activité (voir services/notifier.js) -----------------------------------------------------------
+// Un seul gabarit : titre, quelques phrases, un bouton vers la page concernée. Les textes des membres (titres, noms)
+// n'apparaissent que dans le corps, échappés ; jamais dans l'objet.
+function activity({ name, subject, title, lines, cta, path, settings = true, footerNote }) {
+  const url = `${siteUrl()}${path}`;
+  const settingsUrl = `${siteUrl()}/parametres`;
+  const footerText = settings
+    ? `Vous recevez cet e-mail parce que les notifications de votre compte Gamelia sont activées. Vous pouvez les modifier dans Paramètres : ${settingsUrl}`
+    : footerNote || 'Message envoyé par Gamelia au sujet de votre compte.';
+  const text = [`Bonjour ${name},`, '', ...lines, '', `${cta} : ${url}`, '', SIGN, '', footerText].join('\n');
+  const footerHtml = settings
+    ? `Vous recevez cet e-mail parce que les notifications de votre compte Gamelia sont activées. Vous pouvez les modifier dans <a href="${esc(settingsUrl)}" style="color:#78716c">Paramètres</a>.`
+    : esc(footerNote || 'Message envoyé par Gamelia au sujet de votre compte.');
+  const html = layout(
+    title,
+    `<p>Bonjour ${esc(name)},</p>
+${lines.map((l) => `<p>${esc(l)}</p>`).join('\n')}
+<p style="margin:24px 0"><a href="${esc(url)}" style="background:#16a34a;color:#ffffff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold">${esc(cta)}</a></p>
+<p>${SIGN}</p>`,
+    footerHtml
+  );
+  return { subject, text, html };
+}
+
+const quote = (t) => `« ${t} »`;
+
+// Recruteur
+const newApplication = ({ name, devName, challengeTitle, path }) =>
+  activity({
+    name,
+    subject: 'Nouvelle candidature sur votre défi Gamelia',
+    title: 'Vous avez une nouvelle candidature',
+    lines: [`${devName} vient de relever votre défi ${quote(challengeTitle)} et vous a envoyé sa solution.`, 'Consultez le code et la démo, puis donnez votre note et votre décision.'],
+    cta: 'Voir la candidature',
+    path,
+  });
+
+const challengePublished = ({ name, challengeTitle, path }) =>
+  activity({
+    name,
+    subject: 'Votre défi est publié sur Gamelia',
+    title: 'Votre défi est publié',
+    lines: [`L'équipe Gamelia a validé votre défi ${quote(challengeTitle)}. Il est maintenant visible par les développeurs, qui peuvent y candidater.`, 'Vous serez prévenu par e-mail à chaque nouvelle candidature.'],
+    cta: 'Voir mes défis',
+    path,
+    settings: false,
+  });
+
+const challengeRefused = ({ name, challengeTitle, path }) =>
+  activity({
+    name,
+    subject: "Votre défi n'a pas été accepté sur Gamelia",
+    title: "Votre défi n'a pas été accepté",
+    lines: [`Après examen, l'équipe Gamelia n'a pas pu publier votre défi ${quote(challengeTitle)}.`, 'Vous pouvez le reprendre, le préciser et le soumettre de nouveau. En cas de doute, répondez à ce message.'],
+    cta: 'Voir mes défis',
+    path,
+    settings: false,
+  });
+
+// Développeur : retours du recruteur
+const applicationEvaluated = ({ name, challengeTitle, path }) =>
+  activity({
+    name,
+    subject: 'Le recruteur a évalué votre candidature',
+    title: 'Votre candidature a été évaluée',
+    lines: [`Le recruteur a évalué votre solution au défi ${quote(challengeTitle)} : une note et un retour vous attendent.`],
+    cta: 'Lire le retour',
+    path,
+  });
+
+const applicationRetained = ({ name, company, challengeTitle, path }) =>
+  activity({
+    name,
+    subject: 'Félicitations : votre candidature est retenue',
+    title: 'Votre candidature est retenue',
+    lines: [`Bonne nouvelle : ${company} a retenu votre solution au défi ${quote(challengeTitle)} et vous propose une collaboration.`, 'Lisez sa proposition et répondez-lui depuis Gamelia.'],
+    cta: 'Lire la proposition',
+    path,
+  });
+
+const applicationNotRetained = ({ name, challengeTitle, path }) =>
+  activity({
+    name,
+    subject: "Votre candidature n'a pas été retenue",
+    title: "Votre candidature n'a pas été retenue",
+    lines: [`Le recruteur n'a pas retenu votre solution au défi ${quote(challengeTitle)}. Ce n'est pas un échec : le retour qu'il a laissé peut vous aider pour la suite.`, 'Beaucoup d’autres défis vous attendent.'],
+    cta: 'Voir le retour',
+    path,
+  });
+
+const recruiterContact = ({ name, from, company, path }) =>
+  activity({
+    name,
+    subject: 'Un recruteur souhaite vous contacter sur Gamelia',
+    title: 'Un recruteur vous a écrit',
+    lines: [`${from} (${company}) vous a envoyé un message privé après avoir consulté votre profil.`, 'Répondez-lui directement depuis la messagerie de Gamelia.'],
+    cta: 'Lire le message',
+    path,
+  });
+
+const newPrivateMessage = ({ name, from, path }) =>
+  activity({
+    name,
+    subject: 'Nouveau message privé sur Gamelia',
+    title: 'Vous avez un nouveau message',
+    lines: [`${from} vous a écrit sur Gamelia.`, 'Pour protéger votre vie privée, le contenu du message n’est pas recopié dans cet e-mail.'],
+    cta: 'Ouvrir la conversation',
+    path,
+  });
+
+// Développeur : défi de la plateforme
+const challengeValidated = ({ name, challengeTitle, points, path }) =>
+  activity({
+    name,
+    subject: 'Bravo ! Vous avez relevé un défi sur Gamelia',
+    title: 'Bravo, défi relevé !',
+    lines: [
+      `Félicitations de la part de toute l'équipe Gamelia : votre solution au défi ${quote(challengeTitle)} est validée.`,
+      `Vous gagnez ${points} points, et ce défi apparaît sur votre profil avec la mention « vérifié ».`,
+      'Continuez : chaque défi réussi renforce votre portfolio aux yeux des recruteurs.',
+    ],
+    cta: 'Voir mon profil',
+    path,
+    settings: false,
+  });
+
+const challengeToReview = ({ name, challengeTitle, path }) =>
+  activity({
+    name,
+    subject: 'Votre solution à un défi Gamelia doit être revue',
+    title: 'Votre solution doit être revue',
+    lines: [`L'équipe a relu votre solution au défi ${quote(challengeTitle)} : elle doit être corrigée avant d'être validée.`, 'Reprenez-la et envoyez une nouvelle version. Vous pouvez y arriver !'],
+    cta: 'Reprendre le défi',
+    path,
+    settings: false,
+  });
+
+// Communauté
+const answerReceived = ({ name, from, questionTitle, path }) =>
+  activity({
+    name,
+    subject: 'Quelqu’un a répondu à votre question sur Gamelia',
+    title: 'Vous avez une nouvelle réponse',
+    lines: [`${from} a répondu à votre question ${quote(questionTitle)}.`],
+    cta: 'Lire la réponse',
+    path,
+  });
+
+const bestAnswer = ({ name, questionTitle, path }) =>
+  activity({
+    name,
+    subject: 'Votre réponse a été choisie comme la meilleure',
+    title: 'Meilleure réponse !',
+    lines: [`Félicitations : votre réponse à la question ${quote(questionTitle)} a été choisie comme la meilleure. Vous gagnez 25 points.`],
+    cta: 'Voir la question',
+    path,
+  });
+
+const commentReceived = ({ name, from, what, path }) =>
+  activity({
+    name,
+    subject: 'Nouveau commentaire sur Gamelia',
+    title: 'Vous avez un nouveau commentaire',
+    lines: [`${from} ${what}`],
+    cta: 'Voir',
+    path,
+  });
+
+const collaboration = ({ name, text, path }) =>
+  activity({
+    name,
+    subject: 'Collaboration sur un projet Gamelia',
+    title: 'Collaboration sur un projet',
+    lines: [text],
+    cta: 'Voir le projet',
+    path,
+    settings: false,
+  });
+
+// Administrateurs
+const adminToValidate = ({ name, text, path }) =>
+  activity({
+    name,
+    subject: 'Gamelia : un élément attend votre validation',
+    title: 'Validation en attente',
+    lines: [text],
+    cta: 'Ouvrir l’espace admin',
+    path,
+    settings: false,
+    footerNote: 'Message adressé aux administrateurs de Gamelia.',
+  });
+
+module.exports = {
+  newApplication, challengePublished, challengeRefused, applicationEvaluated, applicationRetained, applicationNotRetained,
+  recruiterContact, newPrivateMessage, challengeValidated, challengeToReview, answerReceived, bestAnswer, commentReceived,
+  collaboration, adminToValidate,
+  recruiterApproved, recruiterRefused, welcomeDeveloper, welcomeRecruiterPending, passwordReset, passwordChanged, esc };
