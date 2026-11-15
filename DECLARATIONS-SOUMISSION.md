@@ -6,9 +6,7 @@ Projet présenté au **Concours CADEV 2026 by Systalink**.
 
 - **Site en ligne** : https://gamelia.ge-tech.site
 - **Hébergement** : serveur cloud Systalink / Datacloud (`vps-systalink`, Ubuntu 22.04), site et base de données sur le même serveur
-- **Compte de démonstration pour le jury** : Compte Developpeur `gameliagroupe+jury@gmail.com` MOT DE PASSE GAMELIA202600
-  Compte recruteur `gameliagroupe+recruteur@gmail.com` MOT DE PASSE GAMELIA202600
-  Compte Admin `'gamelia+admin@gmail.com'`\* MOT DE PASSE GAMELIA202600
+- **Comptes de démonstration pour le jury** : un compte développeur (`gameliagroupe+jury@gmail.com`) et un compte recruteur (`gameliagroupe+recruteur@gmail.com`). Les mots de passe sont communiqués au jury par la plateforme du concours, pas dans ce dépôt.
 
 ## Ce que fait Gamelia
 
